@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CS Colombia · Executive Reports</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#0d1117;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
+.container{width:100%;max-width:600px}
+
+/* Header */
+.header{text-align:center;margin-bottom:3rem}
+.header-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#475569;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);padding:4px 12px;border-radius:20px;margin-bottom:1rem}
+.header h1{font-size:28px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.header h1 span{color:#60a5fa}
+.header p{font-size:13px;color:#475569}
+
+/* Report cards */
+.reports{display:flex;flex-direction:column;gap:12px;margin-bottom:2rem}
+.report-card{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-radius:14px;border:1px solid rgba(255,255,255,.07);background:#161b27;transition:border-color .2s,transform .15s;text-decoration:none;cursor:pointer}
+.report-card:hover{border-color:rgba(255,255,255,.18);transform:translateY(-2px)}
+.report-card.current{border-color:rgba(96,165,250,.3);background:linear-gradient(135deg,#0c1f3f,#111827)}
+.report-card.past{border-color:rgba(100,116,139,.2);background:#13181f}
+.card-left{display:flex;align-items:center;gap:14px}
+.card-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dot-current{background:#60a5fa;box-shadow:0 0 8px rgba(96,165,250,.5)}
+.dot-past{background:#334155}
+.card-info{}
+.card-month{font-size:16px;font-weight:700;color:#e2e8f0;margin-bottom:2px}
+.card-meta{font-size:11px;color:#475569}
+.card-right{display:flex;align-items:center;gap:10px}
+.card-badge{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:20px}
+.badge-live{background:rgba(96,165,250,.12);color:#60a5fa;border:1px solid rgba(96,165,250,.2)}
+.badge-closed{background:rgba(100,116,139,.08);color:#475569;border:1px solid rgba(100,116,139,.15)}
+.card-arrow{font-size:16px;color:#334155}
+.report-card:hover .card-arrow{color:#60a5fa}
+
+/* Stats row */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:2rem}
+.stat{text-align:center;padding:14px;background:#161b27;border-radius:10px;border:1px solid rgba(255,255,255,.06)}
+.stat-val{font-size:20px;font-weight:700;font-family:'DM Mono',monospace;color:#e2e8f0}
+.stat-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#334155;margin-top:4px}
+
+/* Footer */
+.footer{text-align:center;font-size:11px;color:#1e293b}
+.footer a{color:#334155;text-decoration:none}
+.footer a:hover{color:#475569}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-badge">📊 CS Colombia</div>
+    <h1>Executive <span>Reports</span></h1>
+    <p>Performance dashboard · Customer Support</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val">55</div>
+      <div class="stat-lbl">Agentes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">2</div>
+      <div class="stat-lbl">Equipos</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">5</div>
+      <div class="stat-lbl">Waves</div>
+    </div>
+  </div>
+
+  <div class="reports">
+
+    <a class="report-card current" href="cs_executive_jun26_live.html">
+      <div class="card-left">
+        <div class="card-dot dot-current"></div>
+        <div class="card-info">
+          <div class="card-month">Junio 2026</div>
+          <div class="card-meta">Targets: 15 chats/hr · 5 calls/hr · CSAT ≥75% / ≥92%</div>
+        </div>
+      </div>
+      <div class="card-right">
+        <span class="card-badge badge-live">En curso</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="report-card past" href="Mayo_Performance_Final.html">
+      <div class="card-left">
+        <div class="card-dot dot-past"></div>
+        <div class="card-info">
+          <div class="card-month">Mayo 2026</div>
+          <div class="card-meta">42 agentes · Waves 1–4</div>
+        </div>
+      </div>
+      <div class="card-right">
+        <span class="card-badge badge-closed">Cerrado</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="footer">
+    <p>MAJORITY Customer Support · <a href="https://github.com/SergioRin95/cs-executive-reports">GitHub</a></p>
+  </div>
+
+</div>
+</body>
+</html>
