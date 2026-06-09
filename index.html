@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Reporte de Métricas · MAJORITY</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0A0A0A;--surface:#111111;--card:#161616;
+  --border:rgba(255,255,255,0.07);--border-hover:rgba(255,255,255,0.16);
+  --lime:#C8FF00;--lime-dim:rgba(200,255,0,0.1);--lime-glow:rgba(200,255,0,0.3);
+  --white:#F0F0F0;--muted:#555;--muted2:#2e2e2e;--text:#C0C0C0;
+}
+body{font-family:'Inter',sans-serif;background:var(--black);color:var(--text);
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:2rem 1.5rem;}
+
+.logo-wrap{display:flex;align-items:center;gap:14px;margin-bottom:3rem;}
+.logo-mark{width:48px;height:48px;background:var(--lime);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:900;color:#0A0A0A;letter-spacing:-.04em;flex-shrink:0;}
+.logo-name{font-size:16px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--white);}
+.logo-sub{font-size:10px;font-weight:500;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-top:2px;}
+
+.hero{text-align:center;margin-bottom:3rem;max-width:480px;}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--lime);margin-bottom:14px;}
+.hero h1{font-size:clamp(30px,6vw,46px);font-weight:800;letter-spacing:-.04em;
+  line-height:1.08;color:var(--white);margin-bottom:14px;}
+.hero h1 em{font-style:normal;color:var(--lime);}
+.hero p{font-size:13px;color:var(--muted);line-height:1.65;}
+
+.stats{display:flex;gap:1px;margin-bottom:3rem;background:var(--border);
+  border-radius:14px;overflow:hidden;border:1px solid var(--border);}
+.stat{flex:1;padding:18px 20px;background:var(--card);text-align:center;}
+.stat-val{font-size:24px;font-weight:800;font-family:'DM Mono',monospace;
+  color:var(--lime);line-height:1;margin-bottom:5px;}
+.stat-lbl{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+
+.reports{width:100%;max-width:560px;display:flex;flex-direction:column;gap:8px;margin-bottom:2.5rem;}
+
+.report-card{display:flex;align-items:center;justify-content:space-between;
+  padding:20px 22px;background:var(--card);border:1px solid var(--border);
+  border-radius:14px;text-decoration:none;cursor:pointer;
+  transition:border-color .2s,transform .15s;position:relative;overflow:hidden;}
+.report-card::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--lime-dim) 0%,transparent 55%);
+  opacity:0;transition:opacity .2s;pointer-events:none;}
+.report-card:hover{border-color:var(--border-hover);transform:translateY(-2px);}
+.report-card:hover::after{opacity:1;}
+.report-card.current{border-color:rgba(200,255,0,0.18);
+  background:linear-gradient(135deg,#0f1500 0%,#111111 100%);}
+.report-card.current::after{opacity:0.6;}
+
+.card-left{display:flex;align-items:center;gap:16px;position:relative;z-index:1;}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.dot-live{background:var(--lime);box-shadow:0 0 12px var(--lime-glow);animation:pulse 2.4s ease-in-out infinite;}
+.dot-off{background:#2a2a2a;}
+@keyframes pulse{0%,100%{box-shadow:0 0 6px var(--lime-glow);}50%{box-shadow:0 0 18px var(--lime-glow);}}
+
+.card-period{font-size:15px;font-weight:700;color:var(--white);margin-bottom:4px;letter-spacing:-.01em;}
+.card-meta{font-size:11px;color:var(--muted);line-height:1.4;}
+
+.card-right{display:flex;align-items:center;gap:10px;position:relative;z-index:1;}
+.badge{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:4px 11px;border-radius:20px;}
+.badge-on{background:var(--lime-dim);color:var(--lime);border:1px solid rgba(200,255,0,0.22);}
+.badge-off{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border);}
+.arrow{font-size:16px;color:#2e2e2e;transition:color .2s,transform .2s;}
+.report-card:hover .arrow{color:var(--lime);transform:translateX(4px);}
+
+.divider{width:100%;max-width:560px;height:1px;background:var(--border);margin:1.5rem 0;}
+.footer{font-size:11px;color:#333;text-align:center;letter-spacing:.04em;}
+.footer a{color:#444;text-decoration:none;transition:color .15s;}
+.footer a:hover{color:var(--text);}
+
+@media(max-width:480px){
+  .stats{flex-direction:column;}
+  .hero h1{font-size:30px;}
+  .report-card{flex-wrap:wrap;gap:12px;}
+}
+</style>
+</head>
+<body>
+
+<div class="logo-wrap">
+  <div class="logo-mark">M</div>
+  <div>
+    <div class="logo-name">Majority</div>
+    <div class="logo-sub">Customer Support · Colombia</div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">CS Operations · Reportes Ejecutivos</div>
+  <h1>Reporte de<br><em>Métricas</em></h1>
+  <p>Productividad, achievement y calidad del equipo de atención al cliente de MAJORITY Colombia.</p>
+</div>
+
+<div class="stats">
+  <div class="stat">
+    <div class="stat-val">55</div>
+    <div class="stat-lbl">Agentes</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">2</div>
+    <div class="stat-lbl">Equipos</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">5</div>
+    <div class="stat-lbl">Waves</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">15</div>
+    <div class="stat-lbl">Chats/hr</div>
+  </div>
+</div>
+
+<div class="reports">
+
+  <a class="report-card current" href="cs_executive_jun26_live.html">
+    <div class="card-left">
+      <div class="dot dot-live"></div>
+      <div>
+        <div class="card-period">Junio 2026</div>
+        <div class="card-meta">55 agentes &nbsp;·&nbsp; Waves 1–5 &nbsp;·&nbsp; Actualizado diariamente</div>
+      </div>
+    </div>
+    <div class="card-right">
+      <span class="badge badge-on">En curso</span>
+      <span class="arrow">→</span>
+    </div>
+  </a>
+
+  <a class="report-card" href="Mayo Performance Final.html">
+    <div class="card-left">
+      <div class="dot dot-off"></div>
+      <div>
+        <div class="card-period">Mayo 2026</div>
+        <div class="card-meta">42 agentes &nbsp;·&nbsp; Waves 1–4 &nbsp;·&nbsp; Mes cerrado</div>
+      </div>
+    </div>
+    <div class="card-right">
+      <span class="badge badge-off">Cerrado</span>
+      <span class="arrow">→</span>
+    </div>
+  </a>
+
+</div>
+
+<div class="divider"></div>
+
+<div class="footer">
+  MAJORITY &nbsp;·&nbsp; CS Operations Colombia &nbsp;·&nbsp;
+  <a href="https://github.com/SergioRin95/cs-executive-reports">GitHub ↗</a>
+</div>
+
+</body>
+</html>
