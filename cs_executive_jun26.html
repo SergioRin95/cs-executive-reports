@@ -2057,66 +2057,85 @@ function openAgentModal(agName) {
   _agCurrent = ag;
   _agTab = 'chat';
 
-  // Avatar
-  var avatarEl = document.getElementById('agMAvatar');
-  var bg = ag.tl === 'SR' ? '#1e3a5f' : '#2a1200';
-  avatarEl.style.background = bg;
-  avatarEl.textContent = getInitials(ag.name);
-
-  // Name + meta
-  document.getElementById('agMName').textContent = ag.name;
-  var wc = waveColors[ag.w] || '#94a3b8';
-  document.getElementById('agMMeta').innerHTML =
-    '<span style="color:'+wc+'">Wave '+ag.w+'</span>' +
-    '<span style="color:#334155">·</span>' +
-    '<span style="color:'+(ag.tl==='SR'?'#60a5fa':'#fb923c')+'">'+(ag.tl==='SR'?'Sergio R.':'Jhoancy G.')+'</span>' +
-    '<span style="color:#334155">·</span>' +
-    '<span style="color:#475569">'+ag.days+'d en empresa</span>';
-
-  // KPI strip
-  var pphC = ag.chatPph, pphK = ag.callPph;
-  var chatTgt = ag.w===5 ? T_CHAT_HR_W5 : T_CHAT_HR;
-  var callTgt = ag.w===5 ? T_CALL_HR_W5 : T_CALL_HR;
-  var cC = pphC >= chatTgt ? '#22c55e' : '#ef4444';
-  var cK = pphK >= callTgt ? '#22c55e' : '#ef4444';
-  // Occupancy — occ/occChat/occCall vienen en % (ej. 74.2), occStatus en 'low'|'ok'|'high'|null
-  function occColorOf(v) {
-    if (v === null || typeof v === 'undefined') return '#475569';
-    if (v < OCC_LOW*100) return '#ef4444';
-    if (v <= OCC_HIGH*100) return '#22c55e';
-    return '#fbbf24';
-  }
-  function occSubOf(v) {
-    if (v === null || typeof v === 'undefined') return 'Sin datos';
-    if (v < OCC_LOW*100) return '⚠ Bajo';
-    if (v <= OCC_HIGH*100) return '✓ Óptimo';
-    return '⚠ Alto';
-  }
-  var occChatVal = (typeof ag.occChat !== 'undefined' && ag.occChat !== null) ? ag.occChat.toFixed(1)+'%' : '—';
-  var occCallVal = (typeof ag.occCall !== 'undefined' && ag.occCall !== null) ? ag.occCall.toFixed(1)+'%' : '—';
-  var occGenVal  = (typeof ag.occ     !== 'undefined' && ag.occ     !== null) ? ag.occ.toFixed(1)+'%'     : '—';
-
-  document.getElementById('agKpiStrip').innerHTML =
-    kpiMini('Chats / hr', pphC.toFixed(1)+'/hr', 'Target '+chatTgt, cC, 'rgba(96,165,250,0.08)') +
-    kpiMini('Llamadas / hr', pphK.toFixed(1)+'/hr', 'Target '+callTgt, cK, 'rgba(52,211,153,0.08)') +
-    kpiMini('CSAT Chat', cs5+'/5', (ag.chatPct||'—')+'%', cCS, 'rgba(251,191,36,0.06)') +
-    kpiMini('CSAT Calls', ck5+'/5', (ag.callPct||'—')+'%', cCK, 'rgba(244,114,182,0.06)') +
-    kpiMini('Occ. Chat', occChatVal, occSubOf(ag.occChat), occColorOf(ag.occChat), 'rgba(96,165,250,0.06)') +
-    kpiMini('Occ. Llamadas', occCallVal, occSubOf(ag.occCall), occColorOf(ag.occCall), 'rgba(52,211,153,0.06)');
-
-  // Update chart target label for Wave 5
-  var tLabel = ag.w===5 ? 'Target '+T_CHAT_HR_W5+' / '+T_CALL_HR_W5 : 'Target '+T_CHAT_HR+' / '+T_CALL_HR;
-  var tLabelEl = document.getElementById('agChartTargetLabel');
-  if (tLabelEl) tLabelEl.textContent = tLabel;
-
-  // Tabs
-  document.getElementById('agTabChat').classList.add('active');
-  document.getElementById('agTabCall').classList.remove('active');
-
-  // Draw chart + table
-  _drawAgChart();
-
+  // Mostrar el modal PRIMERO — así un error al construir el contenido
+  // (KPIs, gráfico) nunca deja al usuario sin ver nada al hacer clic.
   document.getElementById('agModalOverlay').classList.add('open');
+
+  try {
+    // Avatar
+    var avatarEl = document.getElementById('agMAvatar');
+    var bg = ag.tl === 'SR' ? '#1e3a5f' : '#2a1200';
+    avatarEl.style.background = bg;
+    avatarEl.textContent = getInitials(ag.name);
+
+    // Name + meta
+    document.getElementById('agMName').textContent = ag.name;
+    var wc = waveColors[ag.w] || '#94a3b8';
+    document.getElementById('agMMeta').innerHTML =
+      '<span style="color:'+wc+'">Wave '+ag.w+'</span>' +
+      '<span style="color:#334155">·</span>' +
+      '<span style="color:'+(ag.tl==='SR'?'#60a5fa':'#fb923c')+'">'+(ag.tl==='SR'?'Sergio R.':'Jhoancy G.')+'</span>' +
+      '<span style="color:#334155">·</span>' +
+      '<span style="color:#475569">'+ag.days+'d en empresa</span>';
+
+    // KPI strip
+    var pphC = ag.chatPph, pphK = ag.callPph;
+    var chatTgt = ag.w===5 ? T_CHAT_HR_W5 : T_CHAT_HR;
+    var callTgt = ag.w===5 ? T_CALL_HR_W5 : T_CALL_HR;
+    var cC = pphC >= chatTgt ? '#22c55e' : '#ef4444';
+    var cK = pphK >= callTgt ? '#22c55e' : '#ef4444';
+    var cCS = ag.csatChat >= T_CSAT_CHAT ? '#f472b6' : '#f87171';
+    var cCK = ag.csatCall >= T_CSAT_CALL ? '#f472b6' : '#f87171';
+    var cs5 = Math.round(ag.csatChat/100*5*100)/100;
+    var ck5 = Math.round(ag.csatCall/100*5*100)/100;
+
+    // Occupancy — occ/occChat/occCall vienen en % (ej. 74.2), occStatus en 'low'|'ok'|'high'|null
+    var occChatVal = (typeof ag.occChat !== 'undefined' && ag.occChat !== null) ? ag.occChat.toFixed(1)+'%' : '—';
+    var occCallVal = (typeof ag.occCall !== 'undefined' && ag.occCall !== null) ? ag.occCall.toFixed(1)+'%' : '—';
+
+    document.getElementById('agKpiStrip').innerHTML =
+      kpiMini('Chats / hr', pphC.toFixed(1)+'/hr', 'Target '+chatTgt, cC, 'rgba(96,165,250,0.08)') +
+      kpiMini('Llamadas / hr', pphK.toFixed(1)+'/hr', 'Target '+callTgt, cK, 'rgba(52,211,153,0.08)') +
+      kpiMini('CSAT Chat', cs5+'/5', (ag.chatPct||'—')+'%', cCS, 'rgba(251,191,36,0.06)') +
+      kpiMini('CSAT Calls', ck5+'/5', (ag.callPct||'—')+'%', cCK, 'rgba(244,114,182,0.06)') +
+      kpiMini('Occ. Chat', occChatVal, occSubOf(ag.occChat), occColorOf(ag.occChat), 'rgba(96,165,250,0.06)') +
+      kpiMini('Occ. Llamadas', occCallVal, occSubOf(ag.occCall), occColorOf(ag.occCall), 'rgba(52,211,153,0.06)');
+
+    // Update chart target label for Wave 5
+    var tLabel = ag.w===5 ? 'Target '+T_CHAT_HR_W5+' / '+T_CALL_HR_W5 : 'Target '+T_CHAT_HR+' / '+T_CALL_HR;
+    var tLabelEl = document.getElementById('agChartTargetLabel');
+    if (tLabelEl) tLabelEl.textContent = tLabel;
+
+    // Tabs
+    document.getElementById('agTabChat').classList.add('active');
+    document.getElementById('agTabCall').classList.remove('active');
+  } catch (errKpi) {
+    console.error('openAgentModal: error construyendo KPIs/meta', errKpi);
+  }
+
+  // Draw chart + table — aislado en su propio try/catch: si falla el
+  // gráfico diario, el modal sigue visible con los KPIs de arriba.
+  try {
+    _drawAgChart();
+  } catch (errChart) {
+    console.error('openAgentModal: error dibujando el gráfico diario', errChart);
+    var chartWrap = document.getElementById('agChartWrap') || document.getElementById('agChartCanvas');
+    if (chartWrap) chartWrap.insertAdjacentHTML('afterend', '<p style="padding:12px;color:#f87171;font-size:12px">No se pudo cargar el detalle diario para este agente. Revisa la consola para más detalle.</p>');
+  }
+}
+
+// Occupancy — helpers de color/subtítulo para las tarjetas del modal
+function occColorOf(v) {
+  if (v === null || typeof v === 'undefined') return '#475569';
+  if (v < OCC_LOW*100) return '#ef4444';
+  if (v <= OCC_HIGH*100) return '#22c55e';
+  return '#fbbf24';
+}
+function occSubOf(v) {
+  if (v === null || typeof v === 'undefined') return 'Sin datos';
+  if (v < OCC_LOW*100) return '⚠ Bajo';
+  if (v <= OCC_HIGH*100) return '✓ Óptimo';
+  return '⚠ Alto';
 }
 
 function kpiMini(lbl, val, sub, col, bg) {
@@ -2345,7 +2364,7 @@ buildRow = function(a,rank,avatarBg,sb,wc,tlName,borderColor){
 // Re-render agents so the hook takes effect
 renderAgents();
 
-document.getElementById('lastUpdated').textContent='03/07/2026 12:53';
+document.getElementById('lastUpdated').textContent='03/07/2026 13:08';
 populateMonthSelect();
 setActiveMonth(LATEST_MONTH);
 </script>
