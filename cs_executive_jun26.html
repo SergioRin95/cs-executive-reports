@@ -237,7 +237,7 @@ select.ag-select,input.ag-search{font-size:12px;padding:5px 9px;font-family:'Plu
 .ag-modal-close{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.07);border:none;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:background .15s}
 .ag-modal-close:hover{background:rgba(255,255,255,.14)}
 /* KPI strip */
-.ag-kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:1rem 1.6rem}
+.ag-kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;padding:1rem 1.6rem}
 .ag-kpi-mini{border-radius:10px;padding:10px 12px;border:1px solid rgba(255,255,255,.06);text-align:center}
 .ag-kpi-mini-lbl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-bottom:6px}
 .ag-kpi-mini-val{font-size:20px;font-weight:700;font-family:monospace;line-height:1}
@@ -393,6 +393,7 @@ function applyCustomDateFilter() {
 
 <script>
 var T_CHAT=110,T_CALL=35,T_CSAT_CHAT=75,T_CSAT_CALL=92;
+var OCC_LOW=0.6, OCC_HIGH=0.85; // debe coincidir con CONCURRENCIA_CHAT/OCC_LOW/OCC_HIGH del Apps Script
 var T_CHAT_HR=12,T_CALL_HR=5;
 var T_CHAT_HR_W5=T_CHAT_HR,T_CALL_HR_W5=T_CALL_HR; // Wave 5 ya no tiene métricas diferenciales (mismo target que el resto)
 var WAVE_DAYS={1:105,2:92,3:78,4:57,5:21};
@@ -403,174 +404,143 @@ var MONTHS_DATA = {
     label: "Junio 2026",
     targets: {chat:12,call:5},
     AG: [
-    {name:"Adriana Rincón",w:2,tl:"JG",cd:1,ch:82.5,cp:590,ca:60,kd:1,kh:85.25,kp:322,ka:76,csatChat:95.1,csatCall:92.5,dias:NaN},
-    {name:"Carla Beltran",w:2,tl:"JG",cd:1,ch:92.5,cp:1276,ca:115,kd:1,kh:74.75,kp:305,ka:82,csatChat:87.5,csatCall:97.1,dias:NaN},
-    {name:"Carlos Pinzón",w:3,tl:"JG",cd:1,ch:89,cp:904,ca:85,kd:1,kh:63.75,kp:210,ka:66,csatChat:86.1,csatCall:94.7,dias:NaN},
-    {name:"Catalina Barbosa Oviedo",w:2,tl:"JG",cd:1,ch:109.25,cp:1062,ca:81,kd:1,kh:58.5,kp:276,ka:94,csatChat:94,csatCall:97.7,dias:NaN},
-    {name:"Daniel Leiter",w:4,tl:"JG",cd:1,ch:87.25,cp:986,ca:94,kd:1,kh:74,kp:342,ka:92,csatChat:92,csatCall:96.5,dias:NaN},
-    {name:"David Bravo",w:4,tl:"JG",cd:1,ch:70.75,cp:784,ca:93,kd:1,kh:89.5,kp:376,ka:84,csatChat:97.7,csatCall:97.8,dias:NaN},
-    {name:"David Felipe Medina",w:2,tl:"JG",cd:1,ch:122,cp:1278,ca:88,kd:1,kh:44.75,kp:147,ka:66,csatChat:97,csatCall:96.4,dias:NaN},
-    {name:"Diana Angarita",w:2,tl:"JG",cd:1,ch:103.75,cp:1937,ca:156,kd:1,kh:67.25,kp:246,ka:74,csatChat:90.2,csatCall:91.6,dias:NaN},
-    {name:"Fernanda Montes",w:2,tl:"JG",cd:1,ch:78.5,cp:782,ca:83,kd:1,kh:79,kp:387,ka:98,csatChat:87.5,csatCall:94.8,dias:NaN},
-    {name:"Jersson Lasso",w:2,tl:"JG",cd:1,ch:85.25,cp:1253,ca:122,kd:1,kh:82,kp:368,ka:90,csatChat:95.2,csatCall:97.6,dias:NaN},
-    {name:"Jesús David Guzmán",w:3,tl:"JG",cd:1,ch:72.75,cp:1272,ca:146,kd:1,kh:75.5,kp:387,ka:102,csatChat:93.6,csatCall:96.6,dias:NaN},
-    {name:"Jhoanny Coronel",w:2,tl:"JG",cd:1,ch:102.75,cp:923,ca:75,kd:1,kh:53.75,kp:224,ka:84,csatChat:96.1,csatCall:96,dias:NaN},
-    {name:"Johan Sebastian Chaparro",w:4,tl:"JG",cd:1,ch:61.25,cp:762,ca:103,kd:1,kh:111.25,kp:364,ka:66,csatChat:93.3,csatCall:97.8,dias:NaN},
-    {name:"Johnatan Baruc Henriquez",w:3,tl:"JG",cd:1,ch:69.5,cp:652,ca:78,kd:1,kh:86,kp:364,ka:84,csatChat:97.4,csatCall:97.4,dias:NaN},
-    {name:"Juan David Martinez",w:5,tl:"JG",cd:1,ch:70,cp:684,ca:82,kd:1,kh:75.25,kp:404,ka:108,csatChat:89.4,csatCall:93,dias:NaN},
-    {name:"Juan Pablo Maldonado",w:2,tl:"JG",cd:1,ch:38.5,cp:497,ca:108,kd:1,kh:101,kp:388,ka:76,csatChat:93.8,csatCall:91.7,dias:NaN},
-    {name:"Julian Esteban Acosta",w:3,tl:"JG",cd:1,ch:120.25,cp:1342,ca:93,kd:1,kh:43.75,kp:146,ka:66,csatChat:95.4,csatCall:94.9,dias:NaN},
-    {name:"Laura Estefania Rodriguez",w:3,tl:"JG",cd:1,ch:127,cp:1507,ca:99,kd:1,kh:42.25,kp:149,ka:70,csatChat:85.5,csatCall:98.9,dias:NaN},
-    {name:"María Alejandra Cardozo",w:3,tl:"JG",cd:1,ch:103,cp:827,ca:67,kd:1,kh:58.25,kp:234,ka:80,csatChat:100,csatCall:97.5,dias:NaN},
-    {name:"Maria Lucia Velasquez",w:3,tl:"JG",cd:1,ch:80.25,cp:1156,ca:120,kd:1,kh:86.5,kp:368,ka:86,csatChat:89.2,csatCall:97.1,dias:NaN},
-    {name:"Michel Tatiana Rivera",w:3,tl:"JG",cd:1,ch:68,cp:681,ca:83,kd:1,kh:95.5,kp:413,ka:86,csatChat:85.1,csatCall:93.7,dias:NaN},
-    {name:"Paula Gonzalez",w:4,tl:"JG",cd:1,ch:92.25,cp:622,ca:56,kd:1,kh:79.75,kp:259,ka:64,csatChat:89.4,csatCall:95.3,dias:NaN},
-    {name:"Pedro Joaquin Lara Martinez",w:5,tl:"JG",cd:1,ch:53.75,cp:390,ca:61,kd:1,kh:103.25,kp:378,ka:74,csatChat:83.3,csatCall:96.3,dias:NaN},
-    {name:"Santiago Murcia Molano",w:5,tl:"JG",cd:1,ch:63.75,cp:475,ca:63,kd:1,kh:88.5,kp:311,ka:70,csatChat:96.4,csatCall:94.2,dias:NaN},
-    {name:"Valentina Parra",w:2,tl:"JG",cd:1,ch:91.75,cp:1149,ca:104,kd:1,kh:68.5,kp:406,ka:118,csatChat:91.9,csatCall:96.3,dias:NaN},
-    {name:"Wilmar Rodríguez",w:5,tl:"JG",cd:1,ch:97.75,cp:975,ca:83,kd:1,kh:70.5,kp:290,ka:82,csatChat:86.2,csatCall:96.9,dias:NaN},
-    {name:"Xiomara Gomez Rojas",w:5,tl:"JG",cd:1,ch:96.75,cp:1650,ca:143,kd:1,kh:80.25,kp:282,ka:70,csatChat:85.7,csatCall:94.8,dias:NaN},
-    {name:"Ana Milena Parra",w:2,tl:"SR",cd:1,ch:90.25,cp:1151,ca:107,kd:1,kh:71,kp:303,ka:86,csatChat:82.7,csatCall:94.6,dias:NaN},
-    {name:"Andrés Fernando Steven Gonzales Carvajal",w:5,tl:"SR",cd:1,ch:68,cp:387,ca:48,kd:1,kh:93,kp:223,ka:48,csatChat:91.7,csatCall:98.4,dias:NaN},
-    {name:"Brayan Jaimes",w:4,tl:"SR",cd:1,ch:96,cp:1344,ca:117,kd:1,kh:70.5,kp:366,ka:104,csatChat:95.6,csatCall:93.9,dias:NaN},
-    {name:"Daniela Pineda Sánchez",w:3,tl:"SR",cd:1,ch:96,cp:1378,ca:120,kd:1,kh:60.75,kp:270,ka:88,csatChat:96.5,csatCall:96.4,dias:NaN},
-    {name:"Derek Martín Navas",w:3,tl:"SR",cd:1,ch:77.5,cp:741,ca:80,kd:1,kh:63,kp:197,ka:62,csatChat:95,csatCall:95.8,dias:NaN},
-    {name:"Fausto Andres Felipe Castro Castaño (Andrés Castro)",w:5,tl:"SR",cd:1,ch:90.5,cp:759,ca:70,kd:1,kh:81.5,kp:235,ka:58,csatChat:94.1,csatCall:98.5,dias:NaN},
-    {name:"Fernando Andres Mesa",w:1,tl:"SR",cd:1,ch:36.5,cp:546,ca:125,kd:1,kh:124.25,kp:454,ka:74,csatChat:97.4,csatCall:96.5,dias:NaN},
-    {name:"Gina Milbar Viveros",w:2,tl:"SR",cd:1,ch:28.5,cp:584,ca:171,kd:1,kh:124.25,kp:566,ka:92,csatChat:88.9,csatCall:98.3,dias:NaN},
-    {name:"Jeicob Stiven Murillo",w:3,tl:"SR",cd:1,ch:55.5,cp:660,ca:99,kd:1,kh:104.75,kp:440,ka:84,csatChat:95.7,csatCall:92.8,dias:NaN},
-    {name:"Jesed Anadelina Amado",w:1,tl:"SR",cd:1,ch:131.75,cp:1835,ca:116,kd:1,kh:41.25,kp:190,ka:92,csatChat:89.4,csatCall:93.4,dias:NaN},
-    {name:"Jhonatan Arévalo",w:2,tl:"SR",cd:1,ch:99.75,cp:1321,ca:110,kd:1,kh:57.5,kp:320,ka:112,csatChat:86.4,csatCall:97.6,dias:NaN},
-    {name:"Justin Arley Barrera Gomez",w:5,tl:"SR",cd:1,ch:57.5,cp:687,ca:99,kd:1,kh:108.5,kp:481,ka:88,csatChat:92.3,csatCall:96.6,dias:NaN},
-    {name:"Laura D. Rodriguez",w:4,tl:"SR",cd:1,ch:51,cp:601,ca:98,kd:1,kh:42.75,kp:113,ka:52,csatChat:100,csatCall:98.9,dias:NaN},
-    {name:"Laura Fernanda Reyes",w:1,tl:"SR",cd:1,ch:100.5,cp:1263,ca:105,kd:1,kh:69.5,kp:302,ka:86,csatChat:87.3,csatCall:88.8,dias:NaN},
-    {name:"Laura Natalia Cadavid Velasco",w:5,tl:"SR",cd:1,ch:83,cp:628,ca:63,kd:1,kh:77.75,kp:342,ka:88,csatChat:100,csatCall:96.7,dias:NaN},
-    {name:"Lina Julieth Triana Gomez",w:5,tl:"SR",cd:1,ch:62,cp:585,ca:78,kd:1,kh:106.25,kp:399,ka:76,csatChat:90.5,csatCall:96.8,dias:NaN},
-    {name:"Lirayen Maholly Lugo",w:2,tl:"SR",cd:1,ch:92.75,cp:1063,ca:96,kd:1,kh:61,kp:290,ka:96,csatChat:84.4,csatCall:94.5,dias:NaN},
-    {name:"Manuela Roa Arias",w:4,tl:"SR",cd:1,ch:74,cp:810,ca:91,kd:1,kh:87,kp:365,ka:84,csatChat:80.8,csatCall:87.2,dias:NaN},
-    {name:"Maryori Tatiana Bermudez Caicedo",w:5,tl:"SR",cd:1,ch:50.75,cp:589,ca:97,kd:1,kh:110,kp:430,ka:78,csatChat:91.1,csatCall:97.1,dias:NaN},
-    {name:"Mateo Fajardo Ortegon",w:5,tl:"SR",cd:1,ch:95.25,cp:962,ca:84,kd:1,kh:74,kp:334,ka:90,csatChat:93.4,csatCall:84.8,dias:NaN},
-    {name:"Nelson Alejandro Proaños Acosta",w:5,tl:"SR",cd:1,ch:90,cp:433,ca:40,kd:1,kh:70.75,kp:302,ka:86,csatChat:92.4,csatCall:92.5,dias:NaN},
-    {name:"Paula Cifuentes",w:4,tl:"SR",cd:1,ch:85,cp:2423,ca:238,kd:1,kh:67.75,kp:250,ka:74,csatChat:81.8,csatCall:94.8,dias:NaN},
-    {name:"Paula Daniela Patiño",w:3,tl:"SR",cd:1,ch:101.25,cp:1161,ca:96,kd:1,kh:55.75,kp:238,ka:86,csatChat:87.5,csatCall:93.7,dias:NaN},
-    {name:"Tatiana Onate",w:2,tl:"SR",cd:1,ch:85.25,cp:1241,ca:122,kd:1,kh:61.25,kp:248,ka:80,csatChat:79.1,csatCall:94.2,dias:NaN},
-    {name:"Willver Ferney Alarcón (Will)",w:1,tl:"SR",cd:1,ch:102.75,cp:1458,ca:118,kd:1,kh:58,kp:187,ka:64,csatChat:89.7,csatCall:98.5,dias:NaN},
-    {name:"William Montero",w:4,tl:"SR",cd:1,ch:92.25,cp:1388,ca:125,kd:1,kh:60,kp:300,ka:100,csatChat:86.2,csatCall:96.8,dias:NaN},
-    {name:"Zaira Quiroga",w:2,tl:"SR",cd:1,ch:73.85,cp:574,ca:65,kd:1,kh:90,kp:351,ka:78,csatChat:83.3,csatCall:97.2,dias:NaN}
+    {name:"Adriana Rincón",w:2,tl:"JG",cd:1,ch:82.5,cp:564,ca:57,kd:1,kh:85.25,kp:322,ka:76,csatChat:88,csatCall:92,occ:61,occStatus:"ok",occChat:34.2,occCall:86.9,dias:NaN},
+    {name:"Carla Beltran",w:2,tl:"JG",cd:1,ch:92.5,cp:1185,ca:107,kd:1,kh:74.75,kp:305,ka:82,csatChat:87.1,csatCall:96.6,occ:84.1,occStatus:"ok",occChat:104.3,occCall:59.2,dias:NaN},
+    {name:"Carlos Pinzón",w:3,tl:"JG",cd:1,ch:89,cp:861,ca:81,kd:1,kh:63.75,kp:210,ka:66,csatChat:85.7,csatCall:94.4,occ:62.5,occStatus:"ok",occChat:71.9,occCall:49.4,dias:NaN},
+    {name:"Catalina Barbosa Oviedo",w:2,tl:"JG",cd:1,ch:109.25,cp:983,ca:75,kd:1,kh:58.5,kp:276,ka:94,csatChat:90.6,csatCall:95.7,occ:54,occStatus:"low",occChat:48,occCall:65.3,dias:NaN},
+    {name:"Daniel Leiter",w:4,tl:"JG",cd:1,ch:87.25,cp:926,ca:88,kd:1,kh:74,kp:342,ka:92,csatChat:89.7,csatCall:97.1,occ:85.8,occStatus:"high",occChat:114.7,occCall:51.6,dias:NaN},
+    {name:"David Bravo",w:4,tl:"JG",cd:1,ch:70.75,cp:755,ca:89,kd:1,kh:89.5,kp:376,ka:84,csatChat:91.3,csatCall:97.5,occ:77.3,occStatus:"ok",occChat:91.7,occCall:65.8,dias:NaN},
+    {name:"David Felipe Medina",w:2,tl:"JG",cd:1,ch:122,cp:1181,ca:81,kd:1,kh:44.75,kp:147,ka:66,csatChat:95.7,csatCall:95.5,occ:131.1,occStatus:"high",occChat:169.4,occCall:26.8,dias:NaN},
+    {name:"Diana Angarita",w:2,tl:"JG",cd:1,ch:103.75,cp:1848,ca:148,kd:1,kh:67.25,kp:246,ka:74,csatChat:89.8,csatCall:90.5,occ:76.3,occStatus:"ok",occChat:100.9,occCall:38.4,dias:NaN},
+    {name:"Fernanda Montes",w:2,tl:"JG",cd:1,ch:78.5,cp:723,ca:77,kd:1,kh:79,kp:387,ka:98,csatChat:79.5,csatCall:95.6,occ:115.8,occStatus:"high",occChat:164.9,occCall:66.9,dias:NaN},
+    {name:"Jersson Lasso",w:2,tl:"JG",cd:1,ch:85.25,cp:1095,ca:107,kd:1,kh:82,kp:368,ka:90,csatChat:92.9,csatCall:97.1,occ:50.8,occStatus:"low",occChat:55,occCall:46.4,dias:NaN},
+    {name:"Jesús David Guzmán",w:3,tl:"JG",cd:1,ch:72.75,cp:1147,ca:132,kd:1,kh:75.5,kp:387,ka:102,csatChat:94.7,csatCall:95.7,occ:72,occStatus:"ok",occChat:98,occCall:47,dias:NaN},
+    {name:"Jhoanny Coronel",w:2,tl:"JG",cd:1,ch:102.75,cp:817,ca:67,kd:1,kh:53.75,kp:224,ka:84,csatChat:94.4,csatCall:95.6,occ:74.2,occStatus:"ok",occChat:81,occCall:61.1,dias:NaN},
+    {name:"Johan Sebastian Chaparro",w:4,tl:"JG",cd:1,ch:61.25,cp:677,ca:93,kd:1,kh:111.25,kp:364,ka:66,csatChat:89.5,csatCall:96.7,occ:44.4,occStatus:"low",occChat:79.5,occCall:25.1,dias:NaN},
+    {name:"Johnatan Baruc Henriquez",w:3,tl:"JG",cd:1,ch:69.5,cp:608,ca:73,kd:1,kh:86,kp:364,ka:84,csatChat:96.8,csatCall:97.5,occ:128,occStatus:"high",occChat:212.2,occCall:60,dias:NaN},
+    {name:"Juan David Martinez",w:5,tl:"JG",cd:1,ch:70,cp:637,ca:76,kd:1,kh:75.25,kp:404,ka:108,csatChat:86.5,csatCall:91,occ:62.4,occStatus:"ok",occChat:84.3,occCall:42.1,dias:NaN},
+    {name:"Juan Pablo Maldonado",w:2,tl:"JG",cd:1,ch:38.5,cp:491,ca:107,kd:1,kh:101,kp:388,ka:76,csatChat:90.9,csatCall:91.6,occ:114.1,occStatus:"high",occChat:168.2,occCall:93.5,dias:NaN},
+    {name:"Julian Esteban Acosta",w:3,tl:"JG",cd:1,ch:120.25,cp:1255,ca:87,kd:1,kh:43.75,kp:146,ka:66,csatChat:91.8,csatCall:94,occ:72,occStatus:"ok",occChat:86.2,occCall:32.8,dias:NaN},
+    {name:"Laura Estefania Rodriguez",w:3,tl:"JG",cd:1,ch:127,cp:1411,ca:93,kd:1,kh:42.25,kp:149,ka:70,csatChat:79.5,csatCall:97.1,occ:95.3,occStatus:"high",occChat:112.2,occCall:44.7,dias:NaN},
+    {name:"María Alejandra Cardozo",w:3,tl:"JG",cd:1,ch:103,cp:767,ca:62,kd:1,kh:58.25,kp:234,ka:80,csatChat:100,csatCall:96.9,occ:77.3,occStatus:"ok",occChat:87.8,occCall:58.9,dias:NaN},
+    {name:"Maria Lucia Velasquez",w:3,tl:"JG",cd:1,ch:80.25,cp:1069,ca:111,kd:1,kh:86.5,kp:368,ka:86,csatChat:83.6,csatCall:96.5,occ:47.5,occStatus:"low",occChat:33,occCall:61,dias:NaN},
+    {name:"Michel Tatiana Rivera",w:3,tl:"JG",cd:1,ch:68,cp:635,ca:78,kd:1,kh:95.5,kp:413,ka:86,csatChat:80.5,csatCall:95.1,occ:38,occStatus:"low",occChat:32.7,occCall:41.8,dias:NaN},
+    {name:"Paula Gonzalez",w:4,tl:"JG",cd:1,ch:92.25,cp:604,ca:54,kd:1,kh:79.75,kp:259,ka:64,csatChat:81.5,csatCall:95.6,occ:69.3,occStatus:"ok",occChat:92.3,occCall:42.8,dias:NaN},
+    {name:"Pedro Joaquin Lara Martinez",w:5,tl:"JG",cd:1,ch:53.75,cp:386,ca:60,kd:1,kh:103.25,kp:378,ka:74,csatChat:77.8,csatCall:97.3,occ:86.6,occStatus:"high",occChat:124.1,occCall:67.1,dias:NaN},
+    {name:"Santiago Murcia Molano",w:5,tl:"JG",cd:1,ch:63.75,cp:453,ca:59,kd:1,kh:88.5,kp:311,ka:70,csatChat:95,csatCall:93.6,occ:61.7,occStatus:"ok",occChat:79,occCall:49.2,dias:NaN},
+    {name:"Valentina Parra",w:2,tl:"JG",cd:1,ch:91.75,cp:1095,ca:99,kd:1,kh:68.5,kp:406,ka:118,csatChat:92.3,csatCall:95.6,occ:53,occStatus:"low",occChat:46.9,occCall:61.2,dias:NaN},
+    {name:"Wilmar Rodríguez",w:5,tl:"JG",cd:1,ch:97.75,cp:904,ca:77,kd:1,kh:70.5,kp:290,ka:82,csatChat:80.6,csatCall:97.4,occ:74.3,occStatus:"ok",occChat:89.8,occCall:52.8,dias:NaN},
+    {name:"Xiomara Gomez Rojas",w:5,tl:"JG",cd:1,ch:96.75,cp:1567,ca:135,kd:1,kh:80.25,kp:282,ka:70,csatChat:82,csatCall:93.8,occ:72.4,occStatus:"ok",occChat:109.1,occCall:28.1,dias:NaN},
+    {name:"Ana Milena Parra",w:2,tl:"SR",cd:1,ch:90.25,cp:1034,ca:96,kd:1,kh:71,kp:303,ka:86,csatChat:80.3,csatCall:94.7,occ:104.8,occStatus:"high",occChat:118.9,occCall:86.8,dias:NaN},
+    {name:"Andrés Fernando Steven Gonzales Carvajal",w:5,tl:"SR",cd:1,ch:68,cp:381,ca:47,kd:1,kh:93,kp:223,ka:48,csatChat:84,csatCall:97.6,occ:65.2,occStatus:"ok",occChat:98.7,occCall:40.8,dias:NaN},
+    {name:"Brayan Jaimes",w:4,tl:"SR",cd:1,ch:96,cp:1197,ca:104,kd:1,kh:70.5,kp:366,ka:104,csatChat:92.9,csatCall:95.3,occ:118.7,occStatus:"high",occChat:149.3,occCall:77,dias:NaN},
+    {name:"Daniela Pineda Sánchez",w:3,tl:"SR",cd:1,ch:96,cp:1285,ca:112,kd:1,kh:60.75,kp:270,ka:88,csatChat:95.1,csatCall:97.2,occ:91.4,occStatus:"high",occChat:112.2,occCall:58.5,dias:NaN},
+    {name:"Derek Martín Navas",w:3,tl:"SR",cd:1,ch:77.5,cp:680,ca:73,kd:1,kh:63,kp:197,ka:62,csatChat:93.3,csatCall:95.4,occ:63.1,occStatus:"ok",occChat:81.7,occCall:40.1,dias:NaN},
+    {name:"Fausto Andres Felipe Castro Castaño (Andrés Castro)",w:5,tl:"SR",cd:1,ch:90.5,cp:737,ca:68,kd:1,kh:81.5,kp:235,ka:58,csatChat:88.2,csatCall:97.1,occ:63.8,occStatus:"ok",occChat:73.7,occCall:52.9,dias:NaN},
+    {name:"Fernando Andres Mesa",w:1,tl:"SR",cd:1,ch:36.5,cp:494,ca:113,kd:1,kh:124.25,kp:454,ka:74,csatChat:90.9,csatCall:96.3,occ:71.5,occStatus:"ok",occChat:177.9,occCall:40.2,dias:NaN},
+    {name:"Gina Milbar Viveros",w:2,tl:"SR",cd:1,ch:28.5,cp:526,ca:154,kd:1,kh:124.25,kp:566,ka:92,csatChat:70,csatCall:97.4,occ:62.8,occStatus:"ok",occChat:204.3,occCall:30.4,dias:NaN},
+    {name:"Jeicob Stiven Murillo",w:3,tl:"SR",cd:1,ch:55.5,cp:644,ca:97,kd:1,kh:104.75,kp:440,ka:84,csatChat:89.1,csatCall:96.2,occ:69.1,occStatus:"ok",occChat:92.6,occCall:56.7,dias:NaN},
+    {name:"Jesed Anadelina Amado",w:1,tl:"SR",cd:1,ch:131.75,cp:1674,ca:106,kd:1,kh:41.25,kp:190,ka:92,csatChat:88.1,csatCall:94.6,occ:32.2,occStatus:"low",occChat:29,occCall:42.2,dias:NaN},
+    {name:"Jhonatan Arévalo",w:2,tl:"SR",cd:1,ch:99.75,cp:1201,ca:100,kd:1,kh:57.5,kp:320,ka:112,csatChat:85.4,csatCall:96.9,occ:36.5,occStatus:"low",occChat:24.9,occCall:56.6,dias:NaN},
+    {name:"Justin Arley Barrera Gomez",w:5,tl:"SR",cd:1,ch:57.5,cp:607,ca:88,kd:1,kh:108.5,kp:481,ka:88,csatChat:88.5,csatCall:95.4,occ:68.6,occStatus:"ok",occChat:88,occCall:58.4,dias:NaN},
+    {name:"Laura D. Rodriguez",w:4,tl:"SR",cd:1,ch:51,cp:535,ca:88,kd:1,kh:42.75,kp:113,ka:52,csatChat:100,csatCall:98.5,occ:190.5,occStatus:"high",occChat:323.2,occCall:32.2,dias:NaN},
+    {name:"Laura Fernanda Reyes",w:1,tl:"SR",cd:1,ch:100.5,cp:1166,ca:97,kd:1,kh:69.5,kp:302,ka:86,csatChat:80.9,csatCall:92.3,occ:59.7,occStatus:"low",occChat:79,occCall:31.9,dias:NaN},
+    {name:"Laura Natalia Cadavid Velasco",w:5,tl:"SR",cd:1,ch:83,cp:563,ca:57,kd:1,kh:77.75,kp:342,ka:88,csatChat:72.7,csatCall:97.3,occ:68.4,occStatus:"ok",occChat:54.1,occCall:83.6,dias:NaN},
+    {name:"Lina Julieth Triana Gomez",w:5,tl:"SR",cd:1,ch:62,cp:477,ca:64,kd:1,kh:106.25,kp:399,ka:76,csatChat:78.6,csatCall:95,occ:58.9,occStatus:"low",occChat:64.3,occCall:55.7,dias:NaN},
+    {name:"Lirayen Maholly Lugo",w:2,tl:"SR",cd:1,ch:92.75,cp:1018,ca:92,kd:1,kh:61,kp:290,ka:96,csatChat:83.6,csatCall:92.1,occ:83.3,occStatus:"ok",occChat:106.4,occCall:48.3,dias:NaN},
+    {name:"Manuela Roa Arias",w:4,tl:"SR",cd:1,ch:74,cp:752,ca:85,kd:1,kh:87,kp:365,ka:84,csatChat:80,csatCall:89.2,occ:59,occStatus:"low",occChat:79.8,occCall:41.3,dias:NaN},
+    {name:"Maryori Tatiana Bermudez Caicedo",w:5,tl:"SR",cd:1,ch:50.75,cp:523,ca:86,kd:1,kh:110,kp:430,ka:78,csatChat:80.8,csatCall:97.3,occ:71.3,occStatus:"ok",occChat:134,occCall:42.3,dias:NaN},
+    {name:"Mateo Fajardo Ortegon",w:5,tl:"SR",cd:1,ch:95.25,cp:833,ca:73,kd:1,kh:74,kp:334,ka:90,csatChat:90.9,csatCall:83.3,occ:52.5,occStatus:"low",occChat:50,occCall:55.7,dias:NaN},
+    {name:"Nelson Alejandro Proaños Acosta",w:5,tl:"SR",cd:1,ch:90,cp:409,ca:38,kd:1,kh:70.75,kp:302,ka:86,csatChat:68.4,csatCall:93.6,occ:143.3,occStatus:"high",occChat:136.3,occCall:152.2,dias:NaN},
+    {name:"Paula Cifuentes",w:4,tl:"SR",cd:1,ch:85,cp:2230,ca:218,kd:1,kh:67.75,kp:250,ka:74,csatChat:80.8,csatCall:93.9,occ:138.6,occStatus:"high",occChat:219.3,occCall:37.5,dias:NaN},
+    {name:"Paula Daniela Patiño",w:3,tl:"SR",cd:1,ch:101.25,cp:1082,ca:89,kd:1,kh:55.75,kp:238,ka:86,csatChat:88.2,csatCall:94.2,occ:126.4,occStatus:"high",occChat:165.4,occCall:55.5,dias:NaN},
+    {name:"Tatiana Onate",w:2,tl:"SR",cd:1,ch:85.25,cp:1102,ca:108,kd:1,kh:61.25,kp:248,ka:80,csatChat:74.5,csatCall:95.1,occ:117.5,occStatus:"high",occChat:164,occCall:52.6,dias:NaN},
+    {name:"Willver Ferney Alarcón (Will)",w:1,tl:"SR",cd:1,ch:102.75,cp:1392,ca:113,kd:1,kh:58,kp:187,ka:64,csatChat:89.3,csatCall:96.8,occ:84.5,occStatus:"ok",occChat:111.6,occCall:36.5,dias:NaN},
+    {name:"William Montero",w:4,tl:"SR",cd:1,ch:92.25,cp:1255,ca:113,kd:1,kh:60,kp:300,ka:100,csatChat:82.5,csatCall:94.6,occ:60.3,occStatus:"ok",occChat:68.7,occCall:47.5,dias:NaN},
+    {name:"Zaira Quiroga",w:2,tl:"SR",cd:1,ch:73.85,cp:524,ca:59,kd:1,kh:90,kp:351,ka:78,csatChat:78.1,csatCall:95.2,occ:91.4,occStatus:"high",occChat:86.3,occCall:95.5,dias:NaN}
   ],
     DAILY_CHAT: {
-      "Paula Cifuentes":{1:[190,5.75],2:[83,4.25],3:[66,4.25],6:[202,7.5],8:[70,4.25],9:[81,4.25],10:[77,4.25],11:[99,4.25],14:[205,8],15:[154,5.25],22:[52,1.5],24:[143,8],25:[187,7.5],26:[171,4.75],28:[88,3.25],29:[261,4.75],30:[46,3.25]},
-      "Laura Fernanda Reyes":{1:[170,8],4:[85,5.5],5:[33,1.75],8:[17,2.25],9:[76,7.5],10:[21,1.75],12:[52,3.75],13:[125,7.5],15:[74,4.25],16:[24,5.25],17:[30,4.25],18:[48,3.5],21:[111,8],22:[47,4.25],23:[27,4.25],24:[25,4.25],25:[39,4.25],26:[51,4.25],29:[55,8],30:[106,8]},
-      "Jesed Anadelina Amado":{1:[143,8],2:[102,8],3:[79,8],4:[95,7.5],5:[151,8],8:[111,8],9:[85,8],10:[72,7.5],12:[99,7.5],13:[133,7.5],15:[77,4],16:[80,3.75],17:[53,4.25],21:[114,8],22:[55,4.25],24:[29,4.25],25:[51,5.5],26:[21,3.75],29:[115,8],30:[95,8]},
-      "Diana Angarita":{1:[128,5.5],2:[92,5.75],3:[59,5.75],4:[125,7.5],5:[124,5.75],8:[57,5.75],9:[53,4.25],10:[55,4.25],11:[98,4.25],12:[82,4.25],16:[61,4.25],17:[60,4.25],19:[52,4.25],20:[157,7.5],22:[149,3.75],24:[31,3.75],25:[69,4.75],28:[182,8],29:[167,8],30:[56,2.25]},
-      "Willver Ferney Alarcón (Will)":{1:[125,4.25],2:[88,8],3:[61,6.5],4:[57,4.75],7:[71,8],10:[25,1.75],11:[132,7],12:[100,8],15:[79,5],16:[46,4.25],17:[44,4.25],18:[90,7.5],19:[44,3.75],22:[108,5.25],24:[61,8],26:[64,4.25],27:[93,4.25],29:[92,8]},
-      "Tatiana Onate":{1:[112,8],2:[44,5.75],3:[44,4.25],4:[64,4.25],5:[99,4.25],8:[40,3.75],9:[18,1],10:[31,2.75],12:[47,3.75],13:[104,7.5],16:[33,1.75],17:[62,5.75],18:[119,3.75],21:[126,8],23:[32,4.75],24:[22,2.75],25:[27,2],26:[51,5.5],30:[81,5.75]},
-      "Daniela Pineda Sánchez":{1:[110,8],2:[90,8],3:[78,8],4:[80,3.75],5:[23,1],8:[20,1],9:[17,1],10:[51,4],12:[23,1],13:[125,7.5],16:[75,3.75],17:[74,3.75],18:[110,7.5],21:[116,8],22:[79,4.75],23:[62,3.75],24:[43,4.25],25:[85,5.25],26:[54,3.75],29:[63,8]},
-      "William Montero":{1:[107,4.25],2:[55,3.75],3:[81,8],5:[117,8],6:[128,7.5],8:[47,4.25],9:[49,3.75],10:[58,4.25],11:[86,4.25],14:[70,4.25],15:[97,5],16:[49,4.25],17:[45,4.25],18:[56,4.25],22:[51,4.25],23:[33,3.75],24:[59,8],25:[49,4.25],26:[71,2]},
-      "María Alejandra Cardozo":{1:[102,7.5],2:[61,8],3:[43,8],4:[81,7.5],8:[19,1],9:[21,4.25],10:[23,1.75],12:[56,8],15:[37,4.25],16:[27,4.25],17:[19,4.25],19:[29,4.25],20:[79,7.5],22:[42,5.75],23:[15,4.25],24:[36,8],25:[29,2.25],29:[25,8],30:[51,4.25]},
-      "Carla Beltran":{1:[98,7.5],2:[68,3.75],3:[59,2.75],4:[67,3.75],5:[50,2.75],8:[60,3.75],9:[58,3.75],10:[72,8],11:[59,3.25],12:[62,3.75],16:[50,3.75],17:[67,4.75],19:[56,3.75],20:[97,7.5],24:[42,6.25],25:[57,5.5],28:[103,8],29:[84,8],30:[35,2]},
-      "Jhonatan Arévalo":{1:[89,4.25],2:[72,6.25],3:[20,4.25],5:[114,7],8:[67,8],9:[39,3.25],10:[50,5],11:[70,3.25],12:[54,4.75],15:[40,1],16:[91,8],17:[30,1],19:[34,1.75],20:[113,7.5],22:[78,3.75],23:[34,3.75],24:[36,3.75],25:[25,1],28:[126,8],29:[20,8],30:[103,6.25]},
-      "Jersson Lasso":{1:[82,7.5],2:[39,1.25],3:[52,5.75],4:[26,1],8:[77,6.75],10:[30,2.75],11:[54,1.75],12:[49,3.75],15:[114,6],16:[80,3.75],17:[43,1],18:[56,4.25],19:[47,1],22:[43,1],23:[44,3.75],24:[41,4.75],25:[56,5.25],28:[132,8],29:[48,8],30:[103,8]},
-      "Xiomara Gomez Rojas":{1:[81,7.5],2:[102,8],3:[91,7.5],4:[139,7.5],5:[134,8],8:[95,8],9:[24,1],10:[42,5],11:[124,7],12:[85,1],15:[44,2.25],17:[18,2.25],20:[89,7.5],24:[53,5.25],25:[62,2.5],28:[78,4.25],29:[101,8],30:[154,4.25]},
-      "Paula Gonzalez":{1:[75,7.5],3:[11,4.25],4:[14,1.75],5:[42,8],8:[22,4.25],9:[37,1.75],10:[24,4.25],11:[85,3.25],12:[48,4.25],15:[45,3],17:[4,1.5],19:[34,5.25],20:[68,7.5],22:[11,2.25],24:[23,8],25:[31,3.75],28:[36,8]},
-      "Julian Esteban Acosta":{1:[67,4.25],3:[57,7.5],4:[22,1.75],7:[89,8],8:[77,8],9:[86,7.5],10:[61,7.5],11:[91,7],12:[89,8],15:[49,4.25],16:[32,4.25],17:[25,4.25],18:[83,7.5],19:[52,4.25],22:[61,4.25],23:[61,4.25],24:[64,4.25],26:[109,8],27:[95,7.5],29:[61,8]},
-      "Lirayen Maholly Lugo":{1:[64,2.25],2:[45,3.5],3:[26,2.25],4:[22,2],7:[74,8],8:[53,3.75],9:[49,3.75],10:[43,6],11:[45,2.75],12:[61,4.5],16:[57,5.75],17:[63,4.25],18:[86,4.25],19:[83,5.75],22:[48,4.25],23:[54,4.25],24:[49,5.75],26:[42,4.25],27:[74,7.5],29:[24,8]},
-      "Paula Daniela Patiño":{1:[63,5.5],2:[49,5.75],3:[53,5.75],4:[53,4.25],5:[36,4.25],8:[32,5.75],9:[51,4.25],10:[70,8],12:[53,4.25],15:[60,3.75],16:[31,2.25],17:[59,5.25],18:[72,7.5],21:[95,8],22:[25,2.25],24:[32,4.25],25:[64,4.75],29:[72,8],30:[89,7.5]},
-      "Jhoanny Coronel":{1:[60,4.25],2:[35,4.25],3:[34,4.25],4:[34,4.25],7:[74,8],8:[29,4.75],10:[50,7.5],11:[47,4.25],12:[30,2.75],15:[69,3.75],16:[44,8],17:[31,4.25],18:[33,3.75],19:[54,3.75],22:[59,3.75],23:[15,4.25],24:[21,6.25],26:[56,5.25],27:[87,7.5],29:[61,8]},
-      "Michel Tatiana Rivera":{1:[60,5.25],2:[51,5.75],3:[43,5.5],4:[56,4.25],7:[83,8],8:[45,5.75],10:[27,4.25],11:[54,4.25],12:[50,4.25],16:[12,1.5],18:[61,7],25:[26,3.75],26:[25,1.5],30:[23,2.75]},
-      "Manuela Roa Arias":{1:[58,8],2:[67,8],3:[73,4],4:[73,5.5],5:[41,3.75],8:[23,0.5],9:[33,4],10:[22,4],11:[47,3.75],14:[90,8],16:[28,1.5],19:[31,4.25],22:[22,1.25],24:[30,8],25:[36,3.75],26:[32,1.5],30:[38,4.25]},
-      "Daniel Leiter":{1:[58,4.25],2:[59,4.25],3:[36,4.75],5:[69,4.25],6:[100,7.5],8:[28,4.25],9:[50,4.25],10:[48,4.25],14:[113,8],16:[29,4.25],17:[30,4.25],22:[48,4.25],23:[36,4.25],24:[52,8],25:[36,4.25],26:[61,4.25],29:[76,8]},
-      "Valentina Parra":{1:[57,2.75],2:[71,4.25],3:[36,4.25],4:[40,3.25],5:[80,2.75],8:[64,7.25],9:[27,3.25],10:[73,6.5],12:[42,2.25],13:[102,7.5],16:[42,4.25],17:[82,5.25],18:[53,3.75],21:[95,8],23:[31,4.25],24:[44,4.25],25:[34,4.25],26:[61,7.5],30:[94,6.25]},
-      "Johan Sebastian Chaparro":{1:[51,0.5],2:[71,4.25],3:[54,8],4:[87,7.5],7:[71,8],8:[53,7.5],12:[22,0.5],17:[10,1.5],22:[30,4.25],24:[20,1.25],26:[44,2.5],27:[91,7.5],29:[17,8]},
-      "Ana Milena Parra":{1:[49,1.5],2:[91,4.25],3:[36,1.25],4:[115,7.5],5:[39,1.5],10:[53,4.25],11:[52,3.25],12:[45,3.25],15:[111,7.75],16:[133,8],17:[79,3.75],19:[91,8],22:[102,3.75],23:[40,4],24:[36,4.75],25:[49,3.75]},
-      "Brayan Jaimes":{1:[47,1.75],2:[92,8],3:[53,2],5:[57,3.75],6:[86,7.5],8:[70,8],9:[65,7.5],10:[64,4],11:[69,3.75],14:[128,8],15:[108,3.75],16:[96,4],17:[59,4],18:[56,2.75],19:[63,4],22:[57,2.75],23:[28,4],24:[24,4],25:[22,2.75],26:[70,8],30:[27,1.75]},
-      "Catalina Barbosa Oviedo":{1:[46,3.25],2:[42,4.25],3:[27,4.25],4:[69,7.5],5:[45,2.75],9:[32,4.25],10:[50,5.25],11:[39,2.75],12:[65,5.25],15:[45,4.25],16:[60,8],17:[41,4.25],19:[60,8],20:[83,7.5],22:[41,3.75],23:[62,8],24:[61,8],25:[47,4.25],28:[81,8],29:[28,4.25],30:[26,1.5]},
-      "Derek Martín Navas":{1:[46,4.25],2:[39,4.25],3:[17,4.25],4:[37,3.25],7:[96,8],8:[38,4.25],11:[30,1.75],12:[39,4.25],16:[64,8],18:[53,7.5],19:[56,8],26:[33,4.25],27:[45,7.5],29:[48,8]},
-      "David Felipe Medina":{1:[45,4.25],2:[45,4.25],3:[75,5.75],4:[88,7.5],7:[108,8],8:[34,3.75],9:[33,3.75],10:[57,8],11:[72,4.25],12:[21,1],15:[27,2.5],16:[70,8],17:[29,4.25],19:[70,8],20:[96,7.5],22:[76,5.5],23:[44,8],24:[25,4.25],26:[67,4.25],27:[80,7.5],29:[60,8],30:[56,3.75]},
-      "Wilmar Rodríguez":{1:[41,4.25],2:[29,4.25],3:[25,4.25],4:[42,3.75],5:[40,4.25],8:[31,4.25],9:[34,4.25],10:[36,4.25],11:[109,7.5],12:[59,4.25],15:[61,3.75],16:[47,8],22:[56,4],24:[32,3.75],25:[42,4.25],27:[119,8],29:[49,8],30:[71,5.25]},
-      "Fernando Andres Mesa":{1:[41,2.75],13:[63,7.5],15:[17,1.25],18:[37,4.25],21:[63,8],23:[30,4.25],24:[29,4.25],25:[37,4.25]},
-      "Fernanda Montes":{1:[38,1.5],2:[24,1.5],4:[15,1],7:[77,8],8:[20,1.5],10:[50,3.75],11:[47,2.75],15:[37,2.75],16:[71,8],17:[38,4.25],18:[31,4.25],19:[39,4.25],22:[55,4.25],23:[44,8],24:[24,4.25],26:[61,6.25],27:[44,4.25],29:[39,8]},
-      "Mateo Fajardo Ortegon":{1:[37,4.25],2:[27,4.25],3:[40,4.25],4:[41,4.25],5:[46,5.75],8:[27,4.25],9:[26,4.25],10:[33,4.25],11:[41,2.75],12:[56,4.25],15:[61,5.25],16:[31,2.75],17:[31,4.25],20:[82,7.5],22:[47,4.25],23:[64,8],25:[20,0.5],28:[112,8],29:[37,8],30:[60,4.25]},
-      "Juan Pablo Maldonado":{1:[35,1],2:[29,1],3:[22,1],7:[45,8],8:[23,1],9:[20,1],10:[15,1.75],11:[12,1],12:[23,1],15:[42,1.75],16:[33,1.75],17:[39,2],18:[26,1.75],19:[43,1.75],22:[37,1.75],23:[10,1.75],24:[15,1.25],29:[28,8]},
-      "Fausto Andres Felipe Castro Castaño (Andrés Castro)":{1:[35,4.25],2:[29,4.25],6:[56,7.5],8:[27,4.25],9:[29,3.75],11:[30,2.75],14:[54,8],15:[35,4.25],16:[31,4.25],17:[39,4.25],18:[50,4.25],19:[53,3.75],22:[32,4.25],23:[29,4.25],24:[28,4.25],25:[46,4.25],26:[58,4.25],30:[50,5.75]},
-      "Adriana Rincón":{1:[30,2.25],2:[34,5.5],3:[23,4.25],4:[14,1.75],5:[25,2.5],8:[12,2.25],10:[14,1.75],11:[23,3.25],12:[24,3.75],15:[47,5.25],16:[28,4.75],17:[25,4.25],19:[31,3.75],20:[49,7.5],22:[40,5.25],24:[18,4.25],28:[64,8],29:[40,8],30:[26,4.25]},
-      "Maria Lucia Velasquez":{1:[27,1.25],2:[37,2],3:[64,5.25],5:[77,5.25],8:[39,2.75],9:[41,3.75],10:[19,1.75],13:[115,7.5],15:[51,2.75],16:[40,2],17:[48,3.25],18:[116,7.5],21:[104,8],22:[72,2],23:[45,3.75],24:[27,3.75],25:[34,3.75],26:[36,4.25],29:[90,8],30:[29,1.75]},
-      "David Bravo":{1:[26,1.5],3:[16,1.5],6:[77,7.5],8:[25,4.25],11:[27,2.25],14:[102,8],15:[39,4.25],16:[34,4.25],18:[34,4.25],19:[64,3.25],22:[68,8],23:[35,4.25],24:[23,4.25],25:[45,4.25],26:[97,8],30:[23,1]},
-      "Santiago Murcia Molano":{1:[25,4.25],2:[28,4.25],3:[18,3.75],4:[21,3.25],5:[29,4.25],8:[20,4.25],9:[17,4.25],10:[26,4.25],13:[51,7.5],15:[26,2.25],17:[19,2.5],22:[34,3],25:[30,3.75],29:[34,8],30:[48,4.25]},
-      "Jeicob Stiven Murillo":{2:[70,7],7:[97,8],16:[28,4.25],17:[55,6.5],18:[64,5.75],23:[42,4.25],24:[31,4.25],27:[82,7.5],29:[28,8]},
-      "Laura Estefania Rodriguez":{2:[58,5.75],3:[45,6.5],5:[41,3.75],8:[70,8],9:[62,8],10:[47,7.5],11:[79,5.5],12:[44,4.25],15:[53,4.25],16:[44,5.75],17:[48,4.25],19:[61,4.25],20:[106,7.5],22:[24,8],23:[66,4.25],24:[78,8],25:[61,4.75],26:[34,3.25],27:[164,7.5],28:[192,4.75],29:[28,3.25],30:[81,8]},
-      "Nelson Alejandro Proaños Acosta":{2:[56,8],3:[47,8],7:[36,8],9:[11,3.25],12:[18,1.5],15:[35,4.25],16:[25,4.25],17:[28,4.25],18:[23,4.25],19:[42,8],22:[27,4.25],23:[5,8],24:[2,4.25],26:[29,4.25],27:[12,7.5],29:[24,8]},
-      "Carlos Pinzón":{2:[44,4.25],3:[24,4.25],5:[44,4.25],6:[81,7.5],8:[26,4.25],9:[50,6.25],10:[26,4.25],11:[83,5],14:[83,8],15:[46,4.25],16:[55,8],17:[35,4.25],18:[54,4.25],19:[65,4.75],23:[37,4.25],24:[47,4.25],25:[54,4.25],30:[15,2.75]},
-      "Jesús David Guzmán":{2:[41,2.25],3:[53,5.25],6:[142,7.5],8:[97,7.5],9:[55,4.25],10:[70,5.25],11:[117,4.25],14:[176,8],17:[72,3.75],18:[72,3.75],23:[39,4.25],24:[42,3.75],25:[52,1.75],29:[33,3.25],30:[111,8]},
-      "Andrés Fernando Steven Gonzales Carvajal":{2:[22,8],5:[11,6.5],6:[35,7.5],8:[13,4.25],9:[4,1.5],11:[18,3.25],14:[37,8],15:[38,2],16:[17,1],17:[27,4],18:[14,1],19:[10,1],22:[15,1],23:[7,1],24:[34,8],25:[6,1],26:[18,1],29:[49,8]},
-      "Zaira Quiroga":{2:[15,1.5],3:[18,1.5],5:[24,1.5],6:[73,7.5],8:[16,1.5],9:[42,3.75],10:[14,6.75],14:[78,8],15:[60,5.75],16:[30,4.25],17:[24,4.25],18:[30,3.75],23:[23,4.1],24:[7,4.25],25:[34,3.25],26:[19,4.25],29:[29,8]},
-      "Maryori Tatiana Bermudez Caicedo":{3:[51,8],7:[63,8],8:[53,6],9:[34,3.25],12:[37,2.25],15:[25,1.5],22:[21,1.5],24:[42,4.25],26:[32,3.75],27:[52,4.25]},
-      "Julieth Hasbleidy Pineda Bernal":{3:[41,4.25],5:[89,2.75],8:[140,8],9:[51,2.75]},
-      "Lina Julieth Triana Gomez":{3:[39,8],5:[30,4.25],9:[26,3.25],12:[22,1.5],13:[64,7.5],15:[29,2.75],21:[73,8],22:[24,2.75],23:[21,3.75],24:[19,4.25],26:[31,3.75],29:[39,8],30:[39,4.25]},
-      "Johnatan Baruc Henriquez":{3:[24,4.25],6:[78,7.5],8:[19,1.5],9:[23,4.25],10:[38,4.25],14:[103,8],16:[39,4.25],17:[42,5.25],18:[45,4.75],19:[17,1.5],23:[26,4.25],24:[21,4.25],25:[35,3.75],26:[7,3.75],29:[92,8]},
-      "Laura Natalia Cadavid Velasco":{3:[23,4.25],5:[33,4.25],8:[25,4.25],9:[21,3.75],12:[22,2.5],13:[53,7.5],15:[28,4.25],16:[27,3.75],17:[25,3.75],18:[35,4.25],21:[66,8],22:[35,4.25],24:[31,4.25],25:[34,4.25],26:[51,8],29:[23,8],30:[51,3.75]},
-      "Juan David Martinez":{5:[42,4.25],9:[13,2.25],12:[29,2.25],13:[132,7.5],15:[46,4.25],16:[35,3.75],17:[55,4.25],18:[47,4.25],19:[38,8],22:[37,4.25],23:[42,4.25],24:[38,4.25],25:[59,4.25],26:[56,4.25],29:[9,8]},
-      "Justin Arley Barrera Gomez":{5:[33,4.25],9:[18,1.5],15:[51,4.25],16:[39,4.25],17:[32,4.25],19:[67,3.75],20:[41,4.25],22:[35,4.25],23:[47,4.25],24:[35,4.25],25:[43,4.25],28:[55,4.25],29:[36,8],30:[20,1.75]},
-      "Pedro Joaquin Lara Martinez":{5:[13,2.25],6:[60,7.5],9:[19,3.75],14:[63,8],15:[17,2.25],17:[10,2.25],19:[30,4.25],22:[14,2.25],24:[11,1.5],25:[22,3.75],26:[69,8],29:[27,8]},
-      "Gina Milbar Viveros":{6:[71,7.5],11:[46,3.25],14:[72,8],24:[16,3.75],25:[26,1.5],26:[39,4.5]},
-      "Laura D. Rodriguez":{9:[34,3.75],10:[31,4.25],12:[38,4.25],13:[74,7.5],16:[20,2.25],18:[51,4],22:[67,2.5],23:[14,4],26:[35,2.25],29:[37,8],30:[28,4]}
+      "Paula Cifuentes":{1:[2230,5.75]},
+      "Diana Angarita":{1:[1848,5.5]},
+      "Jesed Anadelina Amado":{1:[1674,8]},
+      "Xiomara Gomez Rojas":{1:[1567,7.5]},
+      "Willver Ferney Alarcón (Will)":{1:[1392,4.25]},
+      "Daniela Pineda Sánchez":{1:[1285,8]},
+      "Julian Esteban Acosta":{1:[1255,4.25]},
+      "William Montero":{1:[1255,4.25]},
+      "Jhonatan Arévalo":{1:[1201,4.25]},
+      "Brayan Jaimes":{1:[1197,1.75]},
+      "Carla Beltran":{1:[1185,7.5]},
+      "David Felipe Medina":{1:[1181,4.25]},
+      "Laura Fernanda Reyes":{1:[1166,8]},
+      "Tatiana Onate":{1:[1102,8]},
+      "Jersson Lasso":{1:[1095,7.5]},
+      "Valentina Parra":{1:[1095,2.75]},
+      "Paula Daniela Patiño":{1:[1082,5.5]},
+      "Maria Lucia Velasquez":{1:[1069,1.25]},
+      "Ana Milena Parra":{1:[1034,1.5]},
+      "Lirayen Maholly Lugo":{1:[1018,2.25]},
+      "Catalina Barbosa Oviedo":{1:[983,3.25]},
+      "Daniel Leiter":{1:[926,4.25]},
+      "Wilmar Rodríguez":{1:[904,4.25]},
+      "Mateo Fajardo Ortegon":{1:[833,4.25]},
+      "Jhoanny Coronel":{1:[817,4.25]},
+      "María Alejandra Cardozo":{1:[767,7.5]},
+      "David Bravo":{1:[755,1.5]},
+      "Manuela Roa Arias":{1:[752,8]},
+      "Fausto Andres Felipe Castro Castaño (Andrés Castro)":{1:[737,4.25]},
+      "Fernanda Montes":{1:[723,1.5]},
+      "Derek Martín Navas":{1:[680,4.25]},
+      "Johan Sebastian Chaparro":{1:[677,0.5]},
+      "Michel Tatiana Rivera":{1:[635,5.25]},
+      "Paula Gonzalez":{1:[604,7.5]},
+      "Adriana Rincón":{1:[564,2.25]},
+      "Fernando Andres Mesa":{1:[494,2.75]},
+      "Juan Pablo Maldonado":{1:[491,1]},
+      "Santiago Murcia Molano":{1:[453,4.25]}
     },
     DAILY_CALL: {
-      "Ana Milena Parra":{1:[49,6.5],2:[20,3.75],3:[36,6.75],5:[39,6.5],8:[28,4.25],9:[26,7.5],10:[13,3.75],11:[30,4.25],12:[19,3.75],17:[12,4.25],23:[15,4],24:[16,3.25]},
-      "Jesús David Guzmán":{1:[44,7.5],2:[31,5.75],3:[14,2.75],5:[21,3.75],8:[2,0.5],9:[16,3.75],10:[8,2.75],11:[19,2.75],15:[42,8],17:[13,4.25],18:[23,3.75],19:[37,8],22:[34,8],23:[16,3.75],24:[27,2.25],25:[20,3.75],26:[20,4.25]},
-      "Justin Arley Barrera Gomez":{1:[44,8],2:[35,8],3:[32,8],4:[34,7.5],5:[14,3.75],8:[34,8],9:[23,6],10:[21,8],11:[27,7],12:[39,8],15:[20,3.75],16:[13,3.75],17:[10,3.75],19:[3,4.25],22:[19,3.75],23:[18,3.75],24:[17,3.75],25:[15,3.25],30:[31,6.25]},
-      "Fernanda Montes":{1:[35,6],2:[34,6.5],3:[38,8],4:[37,6.5],8:[29,6],9:[33,8],10:[12,4.25],11:[29,4.25],12:[26,4.25],15:[31,5.25],17:[11,3.75],18:[15,3.25],19:[15,3.75],24:[19,3.75],26:[1,1.75]},
-      "Lirayen Maholly Lugo":{1:[34,5.75],2:[12,2.75],3:[26,5.75],4:[25,5],8:[13,4.25],9:[14,3.75],10:[6,2],11:[20,3.75],12:[14,3],16:[8,2.25],17:[9,3.75],22:[19,3.75],23:[17,3.75],24:[11,2.25],26:[21,3.75]},
-      "Jeicob Stiven Murillo":{1:[34,8],3:[32,8],4:[32,7.5],8:[36,8],9:[27,7.5],10:[26,8],11:[34,7.25],12:[39,8],15:[17,4.25],16:[13,3.75],17:[3,1.5],18:[7,1.75],19:[34,8],22:[27,8],23:[11,3.5],24:[17,3.75],26:[23,8]},
-      "Laura Estefania Rodriguez":{1:[34,8],2:[13,2.25],3:[6,1.5],4:[25,7.5],5:[17,4.25],11:[7,1.5],15:[14,3.75],16:[9,2.25],17:[9,3.75],19:[15,3.75]},
-      "Brayan Jaimes":{1:[34,6.25],3:[24,6],5:[18,4.25],10:[16,4.25],11:[16,3.25],15:[29,4.25],16:[20,4.25],17:[12,4.25],18:[32,4.75],19:[27,4.25],22:[33,5.25],23:[17,4.25],24:[24,4.25],25:[28,4.75],30:[36,6.25]},
-      "Julieth Hasbleidy Pineda Bernal":{1:[33,8],2:[36,8],3:[18,3.75],4:[38,7.5],5:[26,5.25]},
-      "Zaira Quiroga":{1:[32,8],2:[30,6.5],3:[23,6.5],5:[30,6.5],8:[34,6.5],9:[11,3.75],10:[16,8.25],11:[28,7],15:[6,2.25],16:[13,3.75],17:[13,3.75],18:[17,3.75],22:[32,8],23:[11,3.75],24:[15,3.75],25:[13,4.25],26:[12,3.75]},
-      "Nelson Alejandro Proaños Acosta":{1:[31,8],4:[28,7.5],8:[30,8],9:[16,4.25],10:[23,8],11:[29,7],12:[26,6.5],15:[16,3.75],16:[15,3.25],17:[11,3.75],18:[17,3.25],22:[15,3.75],26:[20,3.75]},
-      "Maria Lucia Velasquez":{1:[29,6.25],2:[27,6],3:[10,2.75],4:[28,7.5],5:[11,2.25],8:[16,5.25],9:[16,3.75],10:[19,6.25],12:[36,8],15:[24,4.75],16:[23,5.5],17:[12,4.25],22:[23,6],23:[9,4.25],24:[19,4.25],25:[17,3.25],30:[31,6.25]},
-      "Carlos Pinzón":{1:[26,7.5],2:[17,3.75],3:[15,3.75],5:[19,3.75],8:[9,3.25],9:[4,1.75],10:[13,3.75],11:[12,2],15:[12,3.75],17:[9,3.75],19:[0,3.25],23:[11,3.75],24:[16,3.75],25:[9,3.25],26:[16,4.25],30:[22,5.25]},
-      "David Bravo":{1:[26,6],2:[34,8],3:[25,6.5],5:[37,8],8:[17,3.75],9:[26,7.5],10:[23,7.5],11:[20,4.75],15:[21,3.75],16:[19,3.75],17:[15,4.25],18:[15,3.25],23:[19,3.75],24:[24,3.75],25:[21,3.25],30:[34,7]},
-      "Maryori Tatiana Bermudez Caicedo":{1:[26,8],2:[28,8],4:[30,7.5],8:[10,2],9:[17,4.25],10:[23,8],11:[33,7],12:[34,5.75],15:[29,6.5],16:[32,7.5],17:[23,7.5],18:[36,7.5],22:[31,6.5],23:[28,8],24:[18,3.75],26:[32,4.25]},
-      "Laura Natalia Cadavid Velasco":{1:[26,8],2:[25,8],3:[12,3.75],4:[28,7.5],5:[14,3.75],8:[15,3.75],9:[13,3.75],12:[22,5],15:[17,3.75],16:[17,4.25],17:[10,3.75],18:[18,3.25],22:[18,3.75],23:[21,4.25],24:[12,3.75],25:[16,3.25],30:[20,4.25]},
-      "Adriana Rincón":{1:[25,5.25],2:[10,2.5],3:[16,3.75],4:[29,5.75],5:[19,4.5],8:[28,5.75],9:[24,8],10:[16,5.75],11:[17,3.75],12:[13,4.25],15:[7,2.75],16:[13,3.25],17:[13,3.75],19:[19,4.25],23:[25,8],25:[30,7.5],30:[18,3.75]},
-      "Valentina Parra":{1:[24,4.25],2:[26,3.75],3:[18,3.75],4:[23,3.25],5:[25,5.25],9:[17,3.75],10:[5,1.5],12:[41,5.25],15:[41,7.5],16:[20,3.75],17:[9,2.75],18:[22,3.25],22:[54,8],23:[19,3.75],24:[16,3.25],25:[25,3.75],30:[12,1.75]},
-      "William Montero":{1:[24,3.75],2:[21,4.25],8:[20,3.75],9:[21,3.75],10:[15,3.75],11:[18,2.75],15:[17,2.5],16:[12,3.75],17:[15,3.75],18:[19,3.25],19:[25,8],22:[24,3.75],23:[18,3.75],25:[18,3.25],26:[33,6]},
-      "Catalina Barbosa Oviedo":{1:[23,3.75],2:[17,3.75],3:[16,3.75],5:[24,5.25],8:[30,8],9:[14,3.75],10:[11,2.75],11:[21,4.25],12:[9,2.25],15:[16,3.75],17:[11,3.75],22:[21,4.25],25:[16,2.75],30:[35,6.5]},
-      "Juan Pablo Maldonado":{1:[23,6.5],2:[24,7],3:[8,7],8:[25,7],9:[23,7],10:[19,5.75],11:[26,5.5],12:[25,6.5],15:[30,6.25],16:[24,5.75],17:[18,6],18:[34,5.25],19:[21,6.25],22:[23,6.25],23:[22,6.25],24:[27,6.75]},
-      "Lina Julieth Triana Gomez":{1:[22,8],2:[32,8],4:[30,7.5],5:[10,3.25],8:[33,8],9:[14,4.25],10:[21,8],12:[24,6],15:[23,5.25],16:[23,8],17:[20,7.5],18:[35,7.5],22:[22,5.25],23:[14,4.25],24:[15,3.75],25:[30,7.5],26:[18,4.25]},
-      "Daniel Leiter":{1:[21,3.25],2:[17,3.75],3:[16,3.25],5:[23,3.75],8:[14,3.75],9:[16,3.75],10:[13,3.25],11:[16,3.75],15:[34,8],16:[19,3.75],17:[12,3.75],18:[41,7.5],19:[36,8],22:[22,3.75],23:[15,3.75],25:[16,3.25],26:[11,3.75]},
-      "Fernando Andres Mesa":{1:[21,5.25],2:[20,8],3:[28,8],4:[29,7.5],5:[28,8],8:[26,8],9:[18,7],10:[24,8],12:[37,8],15:[23,6.25],16:[25,8],17:[24,8],18:[20,3.25],22:[37,8],23:[14,3.75],24:[12,3.75],25:[15,3.25],26:[12,4.25],30:[41,8]},
-      "Andrés Fernando Steven Gonzales Carvajal":{1:[18,8],3:[16,8],5:[5,1.5],8:[7,3.75],9:[12,6],10:[13,8],11:[12,3.75],15:[6,6],16:[16,6.5],17:[7,4.25],18:[22,6.5],19:[17,7],22:[26,7],23:[21,7],25:[22,6.5],26:[3,3.25]},
-      "Mateo Fajardo Ortegon":{1:[18,3.75],2:[16,3.75],3:[14,3.75],4:[15,3.25],5:[11,2.25],8:[17,3.75],10:[12,3.75],11:[16,4.25],12:[15,3.75],15:[15,2.75],16:[26,4.75],17:[13,3.75],19:[33,8],22:[20,3.75],24:[30,8],25:[27,7],30:[14,3.75]},
-      "Jhonatan Arévalo":{1:[17,3.75],2:[11,1.75],3:[16,3.75],4:[36,7.5],5:[5,1],9:[13,3.25],10:[5,1.5],11:[16,2.75],12:[13,2.25],15:[35,7],17:[21,6],19:[26,5.25],22:[14,3.25],23:[10,3.25],24:[20,2.25],25:[14,1.25],30:[11,1.75]},
-      "David Felipe Medina":{1:[16,2.75],2:[14,3.75],3:[6,1.25],8:[9,4.25],9:[8,3.75],11:[17,3.25],12:[10,3.25],15:[12,5],17:[6,3.75],24:[12,3.25],26:[10,3.75],30:[17,4.25]},
-      "Julian Esteban Acosta":{1:[16,3.25],2:[33,8],3:[3,0.5],4:[32,5.75],15:[13,3.75],16:[14,3.75],17:[10,3.75],19:[7,3.75]},
-      "Michel Tatiana Rivera":{1:[16,1.75],2:[11,2.25],3:[13,2.5],4:[12,3.25],8:[12,2.25],10:[11,3.75],11:[12,3.25],12:[12,3.25],15:[37,7.5],16:[30,6.5],17:[23,8],19:[39,8],22:[42,8],23:[34,8],24:[36,8],25:[20,3.75],26:[26,6.5],30:[27,5.25]},
-      "Jhoanny Coronel":{1:[15,3.25],2:[16,3.75],3:[16,3.75],4:[13,3.25],8:[15,3.25],11:[13,3.25],12:[18,5.25],15:[12,3.75],17:[13,3.75],18:[19,3.75],19:[14,4.25],22:[11,4.25],23:[13,3.75],24:[9,1.75],26:[8,2.75]},
-      "Paula Cifuentes":{1:[15,2.25],2:[19,3.75],3:[22,3.75],8:[16,3.75],9:[11,2.75],10:[10,3.75],11:[9,2.75],15:[16,2.75],16:[43,8],17:[26,8],18:[41,7.5],19:[22,4.25]},
-      "Wilmar Rodríguez":{1:[14,3.25],2:[15,3.75],3:[18,3.75],4:[20,3.75],5:[23,3.75],8:[21,3.75],9:[18,3.75],10:[16,3.75],12:[20,3.25],15:[9,3.75],17:[13,4.25],22:[7,4],23:[29,8],24:[13,4.25],25:[18,3.25],30:[18,2.75]},
-      "Derek Martín Navas":{1:[13,3.75],2:[15,3.75],3:[13,3.75],4:[19,4.25],8:[14,3.75],9:[27,7],10:[20,8],11:[19,5.25],12:[17,3.75],17:[19,8],26:[4,3.75]},
-      "Paula Daniela Patiño":{1:[12,2.5],2:[13,2.25],3:[10,2.25],4:[18,3.25],5:[16,3.75],8:[11,2.25],9:[10,3.25],12:[14,3.25],15:[11,3.75],16:[25,5.75],17:[10,2.75],22:[33,5.75],23:[16,8],24:[22,3.75],25:[10,2.75]},
-      "Diana Angarita":{1:[11,2],2:[11,2.25],3:[9,2.25],5:[14,2.25],8:[9,2.25],9:[16,3.75],10:[12,3.75],11:[14,3.25],12:[7,2.25],15:[35,7.5],16:[16,3.75],17:[14,3.75],19:[20,3.75],23:[5,8],24:[14,3.75],25:[15,2.75],30:[24,5.75]},
-      "Johan Sebastian Chaparro":{1:[11,7],2:[5,3.75],9:[13,8],10:[13,8],11:[13,7],12:[21,7.5],15:[28,8],16:[21,8],17:[24,6.5],18:[38,7.5],19:[23,8],22:[11,3.75],23:[21,8],24:[28,6.75],26:[26,5.5],30:[32,8]},
-      "Santiago Murcia Molano":{1:[11,3.25],2:[13,3.75],3:[14,3.75],4:[13,4.25],5:[14,3.75],8:[12,3.75],9:[11,3.75],10:[10,3.75],12:[12,3.75],15:[20,5.75],16:[20,7.5],17:[16,5.5],18:[31,7.5],19:[22,8],22:[2,5],23:[27,8],25:[19,3.75],30:[17,3.75]},
-      "Fausto Andres Felipe Castro Castaño (Andrés Castro)":{1:[10,3.75],2:[14,3.75],3:[19,8],4:[24,7.5],8:[15,3.75],9:[11,3.75],10:[19,8],11:[9,4.25],15:[11,3.25],16:[9,3.75],17:[11,3.75],18:[12,3.25],22:[15,3.75],23:[14,3.75],24:[12,3.75],25:[14,3.25],26:[11,3.75],30:[5,2.25]},
-      "Gina Milbar Viveros":{1:[1,8],2:[56,8],3:[44,8],5:[50,8],8:[34,8],9:[31,7.5],10:[24,7.5],11:[13,3.75],15:[25,4.25],16:[39,8],17:[33,8],18:[43,7.5],19:[28,8],22:[19,8],23:[46,7.75],24:[33,4.25],25:[39,6],26:[8,3.75]},
-      "Laura Fernanda Reyes":{2:[36,8],3:[30,8],4:[13,2],5:[42,6.25],8:[33,5.75],10:[15,6.25],12:[14,3.75],15:[12,3.75],16:[10,2.25],17:[8,3.75],18:[2,1.5],24:[16,3.75],25:[15,3.25],26:[22,3.75]},
-      "Jersson Lasso":{2:[32,6.25],3:[11,2.25],4:[31,6.5],5:[13,3.75],8:[8,1.25],9:[31,7.5],10:[18,5.25],11:[23,5.75],12:[16,3.25],15:[6,2],16:[22,4.25],17:[24,7],18:[12,3.25],19:[36,7],22:[30,7],23:[8,4.25],24:[14,3.25],25:[11,2.25]},
-      "Paula Gonzalez":{2:[29,8],3:[22,3.75],4:[22,5.75],8:[22,3.75],9:[11,6.25],10:[9,3.25],11:[8,3.75],12:[17,3.75],15:[6,5],16:[21,7.5],17:[19,6.5],19:[10,2.75],22:[22,5.75],23:[25,8],25:[9,3.75]},
-      "Pedro Joaquin Lara Martinez":{2:[22,8],3:[27,8],5:[18,5.75],8:[23,8],9:[13,4.25],10:[25,8],11:[29,7],15:[17,5.75],16:[28,7.5],17:[19,5.75],18:[30,7.5],19:[13,3.75],22:[21,5.75],23:[23,8],24:[28,6.5],25:[17,3.75]},
-      "Carla Beltran":{2:[20,4.25],3:[21,5.25],4:[17,3.75],5:[21,4.75],8:[17,3.75],9:[19,4.25],11:[19,3.25],12:[20,4.25],15:[33,8],16:[15,3.75],17:[6,3.25],23:[31,8],24:[8,1.75],25:[5,2],30:[32,6]},
-      "Johnatan Baruc Henriquez":{2:[19,7],3:[13,3.25],5:[28,7.5],8:[28,6.5],9:[14,3.75],10:[13,3.75],11:[32,7],15:[31,8],16:[18,3.75],17:[11,2.75],18:[13,2.75],19:[29,6.5],22:[35,8],23:[15,3.75],24:[19,3.75],25:[18,3.75],26:[28,4.25]},
-      "Tatiana Onate":{2:[9,2.25],3:[17,3.75],4:[11,2.25],5:[27,3.75],8:[25,4.25],9:[12,3.25],10:[18,5.25],12:[19,3.75],15:[33,8],16:[13,3.25],22:[7,8],23:[5,1.25],24:[11,2.75],25:[17,3.5],30:[9,2.25]},
-      "Willver Ferney Alarcón (Will)":{3:[4,1.5],4:[13,2.75],8:[33,8],9:[24,7.5],10:[20,5.75],15:[11,3],16:[22,3.75],17:[17,3.75],19:[24,4.25],23:[5,7.5],26:[14,3.75]},
-      "Juan David Martinez":{4:[30,7.5],5:[23,3.75],8:[32,8],9:[26,5.75],10:[27,8],12:[35,5.75],15:[16,3.25],16:[16,3.75],17:[13,3.75],18:[19,3.25],22:[20,3.75],23:[16,3.75],24:[22,3.75],25:[18,3.25],26:[20,3.75],30:[22,4.25]},
-      "Daniela Pineda Sánchez":{4:[19,3.75],5:[38,7],8:[27,7],9:[24,6.5],10:[17,3.75],12:[39,6.5],16:[13,4.25],17:[13,4.25],22:[10,3.25],23:[11,4.25],24:[18,3.75],25:[9,2.25],26:[18,4.25]},
-      "Manuela Roa Arias":{4:[9,2],5:[23,4.25],8:[28,7.5],9:[15,3.25],10:[18,4.25],11:[23,3.25],15:[30,4.25],16:[31,6.5],17:[26,8],18:[35,7],19:[17,3.75],22:[30,6.75],23:[18,8],25:[17,3.75],26:[32,6.5],30:[13,3.75]},
-      "María Alejandra Cardozo":{5:[32,8],8:[23,6.5],9:[9,3.75],10:[21,6.25],11:[34,7],15:[14,3.75],16:[13,3.75],17:[11,3.75],19:[14,3.75],22:[13,2.25],23:[12,3.75],25:[6,2],30:[15,3.75]},
-      "Xiomara Gomez Rojas":{9:[30,7],10:[16,11.25],12:[24,7],15:[35,5.75],16:[33,8],17:[21,5.75],19:[43,8],22:[25,8],23:[2,8],24:[14,2.75],25:[23,5]},
-      "Laura D. Rodriguez":{9:[17,3.75],10:[12,3.75],12:[15,2.75],15:[32,8],16:[25,5.75]},
-      "Jesed Anadelina Amado":{15:[18,4],16:[16,4.25],17:[18,3.75],18:[45,7.5],22:[22,3.75],23:[6,8],24:[14,3.75],25:[10,2],26:[41,4.25]}
+      "Gina Milbar Viveros":{1:[566,8]},
+      "Justin Arley Barrera Gomez":{1:[481,8]},
+      "Fernando Andres Mesa":{1:[454,5.25]},
+      "Jeicob Stiven Murillo":{1:[440,8]},
+      "Maryori Tatiana Bermudez Caicedo":{1:[430,8]},
+      "Michel Tatiana Rivera":{1:[413,1.75]},
+      "Valentina Parra":{1:[406,4.25]},
+      "Lina Julieth Triana Gomez":{1:[399,8]},
+      "Juan Pablo Maldonado":{1:[388,6.5]},
+      "Fernanda Montes":{1:[387,6]},
+      "Jesús David Guzmán":{1:[387,7.5]},
+      "David Bravo":{1:[376,6]},
+      "Maria Lucia Velasquez":{1:[368,6.25]},
+      "Brayan Jaimes":{1:[366,6.25]},
+      "Johan Sebastian Chaparro":{1:[364,7]},
+      "Zaira Quiroga":{1:[351,8]},
+      "Daniel Leiter":{1:[342,3.25]},
+      "Laura Natalia Cadavid Velasco":{1:[342,8]},
+      "Mateo Fajardo Ortegon":{1:[334,3.75]},
+      "Adriana Rincón":{1:[322,5.25]},
+      "Jhonatan Arévalo":{1:[320,3.75]},
+      "Santiago Murcia Molano":{1:[311,3.25]},
+      "Ana Milena Parra":{1:[303,6.5]},
+      "Nelson Alejandro Proaños Acosta":{1:[302,8]},
+      "William Montero":{1:[300,3.75]},
+      "Lirayen Maholly Lugo":{1:[290,5.75]},
+      "Wilmar Rodríguez":{1:[290,3.25]},
+      "Catalina Barbosa Oviedo":{1:[276,3.75]},
+      "Paula Cifuentes":{1:[250,2.25]},
+      "Diana Angarita":{1:[246,2]},
+      "Paula Daniela Patiño":{1:[238,2.5]},
+      "Fausto Andres Felipe Castro Castaño (Andrés Castro)":{1:[235,3.75]},
+      "Jhoanny Coronel":{1:[224,3.25]},
+      "Andrés Fernando Steven Gonzales Carvajal":{1:[223,8]},
+      "Carlos Pinzón":{1:[210,7.5]},
+      "Derek Martín Navas":{1:[197,3.75]},
+      "Willver Ferney Alarcón (Will)":{1:[187,3.75]},
+      "Julieth Hasbleidy Pineda Bernal":{1:[156,8]},
+      "Laura Estefania Rodriguez":{1:[149,8]},
+      "David Felipe Medina":{1:[147,2.75]},
+      "Julian Esteban Acosta":{1:[146,3.25]}
     }
   }
 };
@@ -2081,15 +2051,30 @@ function openAgentModal(agName) {
   var callTgt = ag.w===5 ? T_CALL_HR_W5 : T_CALL_HR;
   var cC = pphC >= chatTgt ? '#22c55e' : '#ef4444';
   var cK = pphK >= callTgt ? '#22c55e' : '#ef4444';
-  var cCS = ag.csatChat >= T_CSAT_CHAT ? '#f472b6' : '#f87171';
-  var cCK = ag.csatCall >= T_CSAT_CALL ? '#f472b6' : '#f87171';
-  var cs5 = Math.round(ag.csatChat/100*5*100)/100;
-  var ck5 = Math.round(ag.csatCall/100*5*100)/100;
+  // Occupancy — occ/occChat/occCall vienen en % (ej. 74.2), occStatus en 'low'|'ok'|'high'|null
+  function occColorOf(v) {
+    if (v === null || typeof v === 'undefined') return '#475569';
+    if (v < OCC_LOW*100) return '#ef4444';
+    if (v <= OCC_HIGH*100) return '#22c55e';
+    return '#fbbf24';
+  }
+  function occSubOf(v) {
+    if (v === null || typeof v === 'undefined') return 'Sin datos';
+    if (v < OCC_LOW*100) return '⚠ Bajo';
+    if (v <= OCC_HIGH*100) return '✓ Óptimo';
+    return '⚠ Alto';
+  }
+  var occChatVal = (typeof ag.occChat !== 'undefined' && ag.occChat !== null) ? ag.occChat.toFixed(1)+'%' : '—';
+  var occCallVal = (typeof ag.occCall !== 'undefined' && ag.occCall !== null) ? ag.occCall.toFixed(1)+'%' : '—';
+  var occGenVal  = (typeof ag.occ     !== 'undefined' && ag.occ     !== null) ? ag.occ.toFixed(1)+'%'     : '—';
+
   document.getElementById('agKpiStrip').innerHTML =
     kpiMini('Chats / hr', pphC.toFixed(1)+'/hr', 'Target '+chatTgt, cC, 'rgba(96,165,250,0.08)') +
     kpiMini('Llamadas / hr', pphK.toFixed(1)+'/hr', 'Target '+callTgt, cK, 'rgba(52,211,153,0.08)') +
     kpiMini('CSAT Chat', cs5+'/5', (ag.chatPct||'—')+'%', cCS, 'rgba(251,191,36,0.06)') +
-    kpiMini('CSAT Calls', ck5+'/5', (ag.callPct||'—')+'%', cCK, 'rgba(244,114,182,0.06)');
+    kpiMini('CSAT Calls', ck5+'/5', (ag.callPct||'—')+'%', cCK, 'rgba(244,114,182,0.06)') +
+    kpiMini('Occ. Chat', occChatVal, occSubOf(ag.occChat), occColorOf(ag.occChat), 'rgba(96,165,250,0.06)') +
+    kpiMini('Occ. Llamadas', occCallVal, occSubOf(ag.occCall), occColorOf(ag.occCall), 'rgba(52,211,153,0.06)');
 
   // Update chart target label for Wave 5
   var tLabel = ag.w===5 ? 'Target '+T_CHAT_HR_W5+' / '+T_CALL_HR_W5 : 'Target '+T_CHAT_HR+' / '+T_CALL_HR;
@@ -2332,7 +2317,7 @@ buildRow = function(a,rank,avatarBg,sb,wc,tlName,borderColor){
 // Re-render agents so the hook takes effect
 renderAgents();
 
-document.getElementById('lastUpdated').textContent='02/07/2026 16:31';
+document.getElementById('lastUpdated').textContent='03/07/2026 12:18';
 populateMonthSelect();
 setActiveMonth(LATEST_MONTH);
 </script>
