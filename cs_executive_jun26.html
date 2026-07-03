@@ -1448,7 +1448,7 @@ function buildRow(a,rank,avatarBg,sb,wc,tlName,borderColor){
     +'<div class="ag-name-cell">'
     +'<div class="ag-avatar" style="background:'+avatarBg+'">'+getInitials(a.name)+'</div>'
     +'<div class="ag-name-info">'
-    +'<p class="ag-name">'+a.name+'</p>'
+    +'<p class="ag-name" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px" onclick="openAgentModal(\''+a.name.replace(/'/g,"\\'")+'\')" title="Ver detalle de '+a.name+'">'+a.name+'</p>'
     +'<div class="ag-name-sub">'
     +'<span class="ag-meta-tag" style="color:'+wc+'">Wave '+a.w+'</span>'
     +'<span class="ag-meta-sep">·</span>'
@@ -2345,7 +2345,7 @@ buildRow = function(a,rank,avatarBg,sb,wc,tlName,borderColor){
 // Re-render agents so the hook takes effect
 renderAgents();
 
-document.getElementById('lastUpdated').textContent='03/07/2026 12:36';
+document.getElementById('lastUpdated').textContent='03/07/2026 12:53';
 populateMonthSelect();
 setActiveMonth(LATEST_MONTH);
 </script>
