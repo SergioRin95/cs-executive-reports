@@ -34,7 +34,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .sec-line{flex:1;height:1px;background:var(--border)}
 
 /* ── KPI CARDS (4 cols) ── */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:1.5rem}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:700px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 .kpi{border-radius:12px;padding:1.1rem 1.2rem;border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden;min-height:150px}
 .kpi::after{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:50%;background:var(--kpi-glow,transparent);filter:blur(20px);opacity:.3;transform:translate(20%,-20%)}
@@ -54,6 +55,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .kpi-teal{background:#0a2618;--kpi-glow:#34d399}
 .kpi-gold{background:#2a1e00;--kpi-glow:#fbbf24}
 .kpi-rose{background:#280a1e;--kpi-glow:#f472b6}
+.kpi-purple{background:#1e0a2e;--kpi-glow:#c084fc}
 
 /* ── TL CARDS ── */
 .tl-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem}
@@ -183,7 +185,7 @@ select.ag-select,input.ag-search{font-size:12px;padding:5px 9px;font-family:'Plu
 
 /* league table */
 .league-wrap{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.07)}
-.league-header{display:grid;grid-template-columns:44px 1fr 100px 110px 100px 110px 130px;gap:0;align-items:center;padding:10px 16px;background:#0d1420;border-bottom:1px solid rgba(255,255,255,.08)}
+.league-header{display:grid;grid-template-columns:44px 1fr 100px 110px 100px 110px 100px 130px;gap:0;align-items:center;padding:10px 16px;background:#0d1420;border-bottom:1px solid rgba(255,255,255,.08)}
 .lh-cell{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#475569;text-align:center;line-height:1.4}
 .lh-cell:nth-child(2){text-align:left}
 .ag-list{display:flex;flex-direction:column}
@@ -200,7 +202,7 @@ select.ag-select,input.ag-search{font-size:12px;padding:5px 9px;font-family:'Plu
 .div-avatar-more{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--muted);background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.08);margin-left:-4px}
 
 /* agent rows */
-.ag-row{display:grid;grid-template-columns:44px 1fr 100px 110px 100px 110px 130px;gap:0;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;border-left:3px solid transparent}
+.ag-row{display:grid;grid-template-columns:44px 1fr 100px 110px 100px 110px 100px 130px;gap:0;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;border-left:3px solid transparent}
 .ag-row:hover{background:rgba(255,255,255,.03)}
 .ag-rank-cell{display:flex;align-items:center;justify-content:center}
 .ag-rank-num{font-size:12px;font-weight:700;color:var(--faint);font-family:monospace}
@@ -1097,6 +1099,15 @@ function renderKPI(){
   var csCC=avgCC?csatColor(avgCC,T_CSAT_CHAT):{txt:'#334155'};
   var csCK=avgCK?csatColor(avgCK,T_CSAT_CALL):{txt:'#334155'};
 
+  // Occupancy General — promedio entre agentes con datos de AHT
+  var occVals=d.filter(function(a){return typeof a.occ!=='undefined' && a.occ!==null;});
+  var avgOcc=occVals.length?parseFloat((occVals.reduce(function(s,a){return s+a.occ},0)/occVals.length).toFixed(1)):null;
+  var occInRange=occVals.filter(function(a){return (a.occ/100)>=OCC_LOW && (a.occ/100)<=OCC_HIGH;});
+  var occColor=avgOcc===null?'#334155':((avgOcc/100)<OCC_LOW?'#ef4444':((avgOcc/100)<=OCC_HIGH?'#22c55e':'#fbbf24'));
+  var occAchPct=avgOcc; // aquí "achievement" es el propio % de ocupación
+
+  var occAboveOnclick="openModal('Occupancy — dentro de rango','Agentes con Occupancy entre "+(OCC_LOW*100)+"% y "+(OCC_HIGH*100)+"% ("+occInRange.length+"/"+occVals.length+")','__occAbove__','occ','%',function(v){return (v/100)>=OCC_LOW&&(v/100)<=OCC_HIGH?'#22c55e':(v/100)<OCC_LOW?'#ef4444':'#fbbf24';})";
+
   // onclick strings for clickable counts
   var chatAboveOnclick="openModal('Achievement Chat — en meta','Agentes con chatPph ≥ 12/hr ("+chatAbove.length+"/"+n+")','__chatAbove__','chatPph','/hr',function(v){return v>=T_CHAT_HR?'#22c55e':'#f97316';})";
   var callAboveOnclick="openModal('Achievement Calls — en meta','Agentes con callPph ≥ 5/hr ("+callAbove.length+"/"+n+")','__callAbove__','callPph','/hr',function(v){return v>=T_CALL_HR?'#22c55e':'#f97316';})";
@@ -1109,7 +1120,8 @@ function renderKPI(){
     chatAbove:d,     // ALL agents; modal filters by chatPph >= T_CHAT_HR
     callAbove:d,     // ALL agents; modal filters by callPph >= T_CALL_HR
     ccAbove:ccVals,  // agents with CSAT chat data
-    ckAbove:ckVals   // agents with CSAT call data
+    ckAbove:ckVals,  // agents with CSAT call data
+    occAbove:occVals // agents with Occupancy data
   };
 
   document.getElementById('kpiGrid').innerHTML=
@@ -1132,6 +1144,11 @@ function renderKPI(){
       tCall5+' / 5.0  (≥'+T_CSAT_CALL+'%)',
       avgCK5!==null?avgCK5+' <span style="font-size:13px;color:rgba(255,255,255,.3)">/ 5.0</span>':'N/D',
       (ckAchPct||'—'), ckAbove.length, ckVals.length-ckAbove.length, ckVals.length, 'ckAbove','csatCall','%', csCK.txt
+    )
+    +kpiCard('kpi-purple','Occupancy General',
+      (OCC_LOW*100)+'–'+(OCC_HIGH*100)+'% óptimo',
+      avgOcc!==null?avgOcc+' <span style="font-size:13px;color:rgba(255,255,255,.3)">%</span>':'N/D',
+      (occAchPct!==null?occAchPct:'—'), occInRange.length, occVals.length-occInRange.length, occVals.length, 'occAbove','occ','%', occColor
     );
 }
 
@@ -1143,15 +1160,17 @@ function showAgentsMeta(key, inMeta, valueKey, suffix){
     else if(valueKey==='callPph') ok=a.callPph>=T_CALL_HR;
     else if(valueKey==='csatChat') ok=a.csatChat>=T_CSAT_CHAT;
     else if(valueKey==='csatCall') ok=a.csatCall>=T_CSAT_CALL;
+    else if(valueKey==='occ') ok=(a.occ/100)>=OCC_LOW && (a.occ/100)<=OCC_HIGH;
     else ok=a.chatPph>=T_CHAT_HR&&a.callPph>=T_CALL_HR;
     return inMeta?ok:!ok;
   });
-  var title=(inMeta?'✅ En meta — ':'🔴 No cumple — ')+(valueKey==='chatPph'?'Chats':valueKey==='callPph'?'Llamadas':valueKey);
+  var title=(inMeta?'✅ En meta — ':'🔴 No cumple — ')+(valueKey==='chatPph'?'Chats':valueKey==='callPph'?'Llamadas':valueKey==='occ'?'Occupancy':valueKey);
   var colorFn=function(v){
     if(valueKey==='chatPph') return v>=T_CHAT_HR?'#22c55e':'#ef4444';
     if(valueKey==='callPph') return v>=T_CALL_HR?'#22c55e':'#ef4444';
     if(valueKey==='csatChat') return v>=T_CSAT_CHAT?'#f472b6':'#f87171';
     if(valueKey==='csatCall') return v>=T_CSAT_CALL?'#f472b6':'#f87171';
+    if(valueKey==='occ') return (v/100)>=OCC_LOW&&(v/100)<=OCC_HIGH?'#22c55e':((v/100)<OCC_LOW?'#ef4444':'#fbbf24');
     return rc(v).txt;
   };
   openModal(title, filtered.length+' agentes', filtered, valueKey, suffix, colorFn);
@@ -1410,7 +1429,7 @@ function renderAll(){
 }
 // renderAll called at end after all vars defined
 
-var SORT_COL={chatPph:2,csatChat:3,callPph:4,csatCall:5,name:1};
+var SORT_COL={chatPph:2,csatChat:3,callPph:4,csatCall:5,occ:6,name:1};
 
 function highlightCol(sortKey){
   var colIdx = SORT_COL[sortKey] || 0;
@@ -1484,6 +1503,12 @@ function agCsatCell(val, target){
     +'</div>';
 }
 
+function occCell(val){
+  if(val===null||typeof val==='undefined') return '<div class="ag-cell"><span class="ag-cell-val" style="color:#334155">—</span></div>';
+  var col = (val/100)<OCC_LOW ? '#ef4444' : ((val/100)<=OCC_HIGH ? '#22c55e' : '#fbbf24');
+  return '<div class="ag-cell"><span class="ag-cell-val" style="color:'+col+'">'+val.toFixed(1)+'</span><span class="ag-cell-unit">%</span></div>';
+}
+
 function renderAgents(){
   var wave=document.getElementById('agWave').value;
   var sort=document.getElementById('agSort').value;
@@ -1513,8 +1538,8 @@ function renderAgents(){
     return true;
   }).sort(function(a,b){
     if(sort==='name') return a.name.localeCompare(b.name);
-    if(sort==='csatChat'||sort==='csatCall'){
-      return (b[sort]===null?-1:b[sort])-(a[sort]===null?-1:a[sort]);
+    if(sort==='csatChat'||sort==='csatCall'||sort==='occ'){
+      return (b[sort]===null||typeof b[sort]==='undefined'?-1:b[sort])-(a[sort]===null||typeof a[sort]==='undefined'?-1:a[sort]);
     }
     return b[sort]-a[sort];
   });
@@ -1589,6 +1614,7 @@ function buildRow(a,rank,avatarBg,sb,wc,tlName,borderColor){
     +agCsatCell(a.csatChat, T_CSAT_CHAT)
     +agMetricCell(a.callPph, false)
     +agCsatCell(a.csatCall, T_CSAT_CALL)
+    +occCell(typeof a.occ!=='undefined'?a.occ:null)
     +'<span class="ag-status '+sb.cls+'">'+sb.label+'</span>'
     +'</div>';
 }
@@ -1763,6 +1789,7 @@ renderDailyTable();
       <option value="csatChat">CSAT Chat</option>
       <option value="callPph">Llamadas/hr</option>
       <option value="csatCall">CSAT Llamadas</option>
+      <option value="occ">Occupancy</option>
       <option value="name">A-Z</option>
     </select>
     <input class="ag-search" id="agSearch" type="text" placeholder="Buscar agente…" oninput="renderAgents()" style="width:150px">
@@ -1776,7 +1803,8 @@ renderDailyTable();
       <div class="lh-cell" data-col="3">CSAT<br>Chats</div>
       <div class="lh-cell" data-col="4">Llamadas<br>por hora</div>
       <div class="lh-cell" data-col="5">CSAT<br>Llamadas</div>
-      <div class="lh-cell" data-col="6">Estado</div>
+      <div class="lh-cell" data-col="6">Occupancy</div>
+      <div class="lh-cell" data-col="7">Estado</div>
     </div>
     <div class="ag-list" id="agList"></div>
   </div>
@@ -2471,7 +2499,7 @@ buildRow = function(a,rank,avatarBg,sb,wc,tlName,borderColor){
 // Re-render agents so the hook takes effect
 renderAgents();
 
-document.getElementById('lastUpdated').textContent='03/07/2026 12:18';
+document.getElementById('lastUpdated').textContent='03/07/2026 12:36';
 populateMonthSelect();
 setActiveMonth(LATEST_MONTH);
 </script>
