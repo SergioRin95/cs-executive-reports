@@ -960,12 +960,14 @@ function kpiCard(colorCls, label, targetLine, resultVal, avgPct, metaCount, belo
 function renderKPI(){
   var d=getFiltered(activeTL);
   var n=d.length;
-  var dChat=d.filter(function(a){return a.chatPph>0;}); var nChat=dChat.length||1;
-  var dCall=d.filter(function(a){return a.callPph>0;}); var nCall=dCall.length||1;
-  var avgChatResult=parseFloat((dChat.reduce(function(s,a){return s+a.chatPph},0)/nChat).toFixed(1));
-  var avgCallResult=parseFloat((dCall.reduce(function(s,a){return s+a.callPph},0)/nCall).toFixed(1));
-  var avgChatPct=Math.round(dChat.reduce(function(s,a){return s+a.chatPct},0)/nChat);
-  var avgCallPct=Math.round(dCall.reduce(function(s,a){return s+a.callPct},0)/nCall);
+  var dChat=d.filter(function(a){return a.ch>0;});
+  var dCall=d.filter(function(a){return a.kh>0;});
+  var sumCp=dChat.reduce(function(s,a){return s+a.cp;},0), sumCh=dChat.reduce(function(s,a){return s+a.ch;},0);
+  var sumKp=dCall.reduce(function(s,a){return s+a.kp;},0), sumKh=dCall.reduce(function(s,a){return s+a.kh;},0);
+  var avgChatResult=sumCh>0?parseFloat((sumCp/sumCh).toFixed(1)):0;
+  var avgCallResult=sumKh>0?parseFloat((sumKp/sumKh).toFixed(1)):0;
+  var avgChatPct=sumCh>0?Math.round(avgChatResult/T_CHAT_HR*100):0;
+  var avgCallPct=sumKh>0?Math.round(avgCallResult/T_CALL_HR*100):0;
   var chatAbove=d.filter(function(a){var t=a.w===5?T_CHAT_HR_W5:T_CHAT_HR; return a.chatPph>0&&a.chatPph>=t;});
   var callAbove=d.filter(function(a){var t=a.w===5?T_CALL_HR_W5:T_CALL_HR; return a.callPph>0&&a.callPph>=t;});
   var cC=rc(avgChatPct),kC=rc(avgCallPct);
@@ -1148,8 +1150,12 @@ function renderTL(){
   document.getElementById('tlCards').innerHTML=tls.map(function(t){
     var d=getFiltered(t.key);
     var n=d.length;
-    var aC=Math.round(d.reduce(function(s,a){return s+a.chatPct},0)/n);
-    var aK=Math.round(d.reduce(function(s,a){return s+a.callPct},0)/n);
+    var dChat=d.filter(function(a){return a.ch>0;});
+    var dCall=d.filter(function(a){return a.kh>0;});
+    var sumCp=dChat.reduce(function(s,a){return s+a.cp;},0), sumCh=dChat.reduce(function(s,a){return s+a.ch;},0);
+    var sumKp=dCall.reduce(function(s,a){return s+a.kp;},0), sumKh=dCall.reduce(function(s,a){return s+a.kh;},0);
+    var aC=sumCh>0?Math.round((sumCp/sumCh)/T_CHAT_HR*100):0;
+    var aK=sumKh>0?Math.round((sumKp/sumKh)/T_CALL_HR*100):0;
     var aCo=Math.round(d.reduce(function(s,a){return s+a.combined},0)/n);
     var ab=d.filter(function(a){return a.chatPph>=T_CHAT_HR&&a.callPph>=T_CALL_HR;});
     var avgCC=avg(d,'csatChat'), avgCK=avg(d,'csatCall');
@@ -1203,8 +1209,12 @@ function renderWaves(){
     var wg=d.filter(function(a){return a.w===w;});
     if(!wg.length) return '<div class="wave-card" style="opacity:.3"><p class="wave-label" style="color:'+waveColors[w]+'">Wave '+w+'</p><p class="wave-count">Sin agentes</p></div>';
     var n=wg.length;
-    var aC=Math.round(wg.reduce(function(s,a){return s+a.chatPct},0)/n);
-    var aK=Math.round(wg.reduce(function(s,a){return s+a.callPct},0)/n);
+    var wChat=wg.filter(function(a){return a.ch>0;});
+    var wCall=wg.filter(function(a){return a.kh>0;});
+    var sumCp=wChat.reduce(function(s,a){return s+a.cp;},0), sumCh=wChat.reduce(function(s,a){return s+a.ch;},0);
+    var sumKp=wCall.reduce(function(s,a){return s+a.kp;},0), sumKh=wCall.reduce(function(s,a){return s+a.kh;},0);
+    var aC=sumCh>0?Math.round((sumCp/sumCh)/T_CHAT_HR*100):0;
+    var aK=sumKh>0?Math.round((sumKp/sumKh)/T_CALL_HR*100):0;
     var cC=rc(aC),kC=rc(aK);
     // CSAT
     var ccVals=wg.filter(function(a){return a.csatChat!==null;});
@@ -2405,7 +2415,7 @@ buildRow = function(a,rank,avatarBg,sb,wc,tlName,borderColor){
 // Re-render agents so the hook takes effect
 renderAgents();
 
-document.getElementById('lastUpdated').textContent='15/07/2026 15:17';
+document.getElementById('lastUpdated').textContent='15/07/2026 17:44';
 populateMonthSelect();
 setActiveMonth(LATEST_MONTH);
 </script>
