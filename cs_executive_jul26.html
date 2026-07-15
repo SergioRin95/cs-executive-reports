@@ -981,9 +981,11 @@ function renderKPI(){
   var csCC=avgCC?csatColor(avgCC,T_CSAT_CHAT):{txt:'#334155'};
   var csCK=avgCK?csatColor(avgCK,T_CSAT_CALL):{txt:'#334155'};
 
-  // Occupancy General — promedio entre agentes con datos de AHT
+  // Occupancy General — ponderado por horas trabajadas (no promedio simple de % por agente)
   var occVals=d.filter(function(a){return typeof a.occ!=='undefined' && a.occ!==null;});
-  var avgOcc=occVals.length?parseFloat((occVals.reduce(function(s,a){return s+a.occ},0)/occVals.length).toFixed(1)):null;
+  var occProdSum=occVals.reduce(function(s,a){return s+(a.ch+a.kh)*a.occ/100;},0);
+  var occHoursSum=occVals.reduce(function(s,a){return s+(a.ch+a.kh);},0);
+  var avgOcc=occHoursSum>0?parseFloat((occProdSum/occHoursSum*100).toFixed(1)):null;
   var occInRange=occVals.filter(function(a){return (a.occ/100)>=OCC_LOW && (a.occ/100)<=OCC_HIGH;});
   var occColor=avgOcc===null?'#334155':((avgOcc/100)<OCC_LOW?'#ef4444':((avgOcc/100)<=OCC_HIGH?'#22c55e':'#fbbf24'));
   var occAchPct=avgOcc; // aquí "achievement" es el propio % de ocupación
@@ -2410,7 +2412,7 @@ buildRow = function(a,rank,avatarBg,sb,wc,tlName,borderColor){
 // Re-render agents so the hook takes effect
 renderAgents();
 
-document.getElementById('lastUpdated').textContent='15/07/2026 17:44';
+document.getElementById('lastUpdated').textContent='15/07/2026 17:57';
 populateMonthSelect();
 setActiveMonth(LATEST_MONTH);
 </script>
