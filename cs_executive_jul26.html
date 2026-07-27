@@ -1802,7 +1802,7 @@ renderDailyTable();
       <span style="width:18px;height:1px;background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 4px,transparent 4px,transparent 8px);display:inline-block"></span>
       <span id="agChartTargetLabel">Target 12 / 5</span>
     </span>
-    <span style="margin-left:auto;font-size:11px;color:#1e293b">Fines de semana excluidos · Datos del Google Sheet</span>
+    <span style="margin-left:auto;font-size:11px;color:#1e293b">Incluye fines de semana · Datos del Google Sheet</span>
   </div>
 </div>
 
@@ -2217,8 +2217,6 @@ function _drawAgChart() {
 
   for (var d=1; d<=31; d++) {
     var entry = src ? src[d] : undefined;
-    var isWeekend = _isWeekend2026(d);
-    if (isWeekend) continue; // skip weekends in chart (they're null in data anyway)
 
     var dayLabel = d+'';
     var pph = null, ach = null;
@@ -2408,7 +2406,7 @@ buildRow = function(a,rank,avatarBg,sb,wc,tlName,borderColor){
 // Re-render agents so the hook takes effect
 renderAgents();
 
-document.getElementById('lastUpdated').textContent='27/07/2026 06:58';
+document.getElementById('lastUpdated').textContent='27/07/2026 07:19';
 populateMonthSelect();
 setActiveMonth(LATEST_MONTH);
 </script>
