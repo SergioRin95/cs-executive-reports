@@ -262,7 +262,7 @@ select.ag-select,input.ag-search{font-size:12px;padding:5px 9px;font-family:'Plu
 .ag-day-table tr:hover td{background:rgba(255,255,255,.04)}
 .ag-day-active{color:#e2e8f0!important}
 
-.wave-grid{grid-template-columns:repeat(5,1fr)!important}
+.wave-grid{grid-template-columns:repeat(6,1fr)!important}
 @media(max-width:900px){.wave-grid{grid-template-columns:repeat(3,1fr)!important}}
 </style>
 <script>
@@ -398,8 +398,9 @@ var T_CHAT=110,T_CALL=35,T_CSAT_CHAT=75,T_CSAT_CALL=92;
 var OCC_LOW=0.6, OCC_HIGH=0.85; // debe coincidir con CONCURRENCIA_CHAT/OCC_LOW/OCC_HIGH del Apps Script
 var T_CHAT_HR=12,T_CALL_HR=5;
 var T_CHAT_HR_W5=T_CHAT_HR,T_CALL_HR_W5=T_CALL_HR; // Wave 5 ya no tiene métricas diferenciales (mismo target que el resto)
-var WAVE_DAYS={1:105,2:92,3:78,4:57,5:21};
-var WAVE_START={1:'17 feb 2026',2:'2 mar 2026',3:'16 mar 2026',4:'6 abr 2026',5:'13 may 2026'};
+var T_CHAT_HR_W6=9,T_CALL_HR_W6=3.5; // Wave 6 ramp-up — solo agosto 2026, target especial
+var WAVE_DAYS={1:105,2:92,3:78,4:57,5:21,6:7};
+var WAVE_START={1:'17 feb 2026',2:'2 mar 2026',3:'16 mar 2026',4:'6 abr 2026',5:'13 may 2026',6:'27 jul 2026'};
 
 var MONTHS_DATA = {
   "2026-08": {
@@ -630,8 +631,10 @@ function applyDerivedFields(agArr) {
   agArr.forEach(function(a) {
     a.chatPph = a.ch > 0 ? Math.round(a.cp / a.ch * 10) / 10 : 0;
     a.callPph = a.kh > 0 ? Math.round(a.kp / a.kh * 10) / 10 : 0;
-    a.chatPct = a.ch > 0 && a.cp > 0 ? Math.round(a.chatPph / T_CHAT_HR * 100) : 0;
-    a.callPct = a.kh > 0 && a.kp > 0 ? Math.round(a.callPph / T_CALL_HR * 100) : 0;
+    var _aChatT = a.w===5?T_CHAT_HR_W5:(a.w===6?T_CHAT_HR_W6:T_CHAT_HR);
+    var _aCallT = a.w===5?T_CALL_HR_W5:(a.w===6?T_CALL_HR_W6:T_CALL_HR);
+    a.chatPct = a.ch > 0 && a.cp > 0 ? Math.round(a.chatPph / _aChatT * 100) : 0;
+    a.callPct = a.kh > 0 && a.kp > 0 ? Math.round(a.callPph / _aCallT * 100) : 0;
     a.combined = a.chatPct > 0 && a.callPct > 0 ? Math.round((a.chatPct + a.callPct) / 2) : (a.chatPct > 0 ? a.chatPct : a.callPct);
     a.days = WAVE_DAYS[a.w] || 0;
   });
@@ -646,6 +649,7 @@ function setActiveMonth(key) {
 
   T_CHAT_HR = md.targets.chat; T_CALL_HR = md.targets.call;
   T_CHAT_HR_W5 = T_CHAT_HR; T_CALL_HR_W5 = T_CALL_HR;
+  T_CHAT_HR_W6 = (key==='2026-08') ? 9 : T_CHAT_HR; T_CALL_HR_W6 = (key==='2026-08') ? 3.5 : T_CALL_HR;
 
   AG = md.AG.slice();
   applyDerivedFields(AG);
@@ -705,7 +709,7 @@ var activeTL=''; var distCh='all'; var agMeta='all'; var agTL='';
 // Date filter state
 var _kpiDateFrom = 1, _kpiDateTo = 31;
 var _dateFilterMode = 'all';
-var waveColors={1:'#a78bfa',2:'#34d399',3:'#fb923c',4:'#fbbf24',5:'#38bdf8'};
+var waveColors={1:'#a78bfa',2:'#34d399',3:'#fb923c',4:'#fbbf24',5:'#38bdf8',6:'#f472b6'};
 
 function get(tl){
   return AG.filter(function(a){return !tl||a.tl===tl;});
@@ -732,8 +736,8 @@ function getFiltered(tl) {
     if (hasDailyData) {
       var chatPph = chatHrs>0 ? Math.round(chatConvs/chatHrs*10)/10 : 0;
       var callPph = callHrs>0 ? Math.round(callConvs/callHrs*10)/10 : 0;
-      var chatT = a.w===5?T_CHAT_HR_W5:T_CHAT_HR;
-      var callT = a.w===5?T_CALL_HR_W5:T_CALL_HR;
+      var chatT = a.w===5?T_CHAT_HR_W5:(a.w===6?T_CHAT_HR_W6:T_CHAT_HR);
+      var callT = a.w===5?T_CALL_HR_W5:(a.w===6?T_CALL_HR_W6:T_CALL_HR);
       var chatPct = chatHrs>0&&chatConvs>0 ? Math.round(chatPph/chatT*100) : 0;
       var callPct = callHrs>0&&callConvs>0 ? Math.round(callPph/callT*100) : 0;
       var combined = chatPct>0&&callPct>0?Math.round((chatPct+callPct)/2):(chatPct>0?chatPct:callPct);
@@ -924,8 +928,8 @@ function renderKPI(){
   var avgCallResult=sumKh>0?parseFloat((sumKp/sumKh).toFixed(1)):0;
   var avgChatPct=sumCh>0?Math.round(avgChatResult/T_CHAT_HR*100):0;
   var avgCallPct=sumKh>0?Math.round(avgCallResult/T_CALL_HR*100):0;
-  var chatAbove=d.filter(function(a){var t=a.w===5?T_CHAT_HR_W5:T_CHAT_HR; return a.chatPph>0&&a.chatPph>=t;});
-  var callAbove=d.filter(function(a){var t=a.w===5?T_CALL_HR_W5:T_CALL_HR; return a.callPph>0&&a.callPph>=t;});
+  var chatAbove=d.filter(function(a){var t=a.w===5?T_CHAT_HR_W5:(a.w===6?T_CHAT_HR_W6:T_CHAT_HR); return a.chatPph>0&&a.chatPph>=t;});
+  var callAbove=d.filter(function(a){var t=a.w===5?T_CALL_HR_W5:(a.w===6?T_CALL_HR_W6:T_CALL_HR); return a.callPph>0&&a.callPph>=t;});
   var cC=rc(avgChatPct),kC=rc(avgCallPct);
 
   // CSAT
@@ -1163,7 +1167,7 @@ function showTLAgents(key,title,vk,sf){
 // ── WAVE BREAKDOWN ──
 function renderWaves(){
   var d=getFiltered(activeTL);
-  document.getElementById('waveGrid').innerHTML=[1,2,3,4,5].map(function(w){
+  document.getElementById('waveGrid').innerHTML=[1,2,3,4,5,6].map(function(w){
     var wg=d.filter(function(a){return a.w===w;});
     if(!wg.length) return '<div class="wave-card" style="opacity:.3"><p class="wave-label" style="color:'+waveColors[w]+'">Wave '+w+'</p><p class="wave-count">Sin agentes</p></div>';
     var n=wg.length;
@@ -1171,8 +1175,10 @@ function renderWaves(){
     var wCall=wg.filter(function(a){return a.kh>0;});
     var sumCp=wChat.reduce(function(s,a){return s+a.cp;},0), sumCh=wChat.reduce(function(s,a){return s+a.ch;},0);
     var sumKp=wCall.reduce(function(s,a){return s+a.kp;},0), sumKh=wCall.reduce(function(s,a){return s+a.kh;},0);
-    var aC=sumCh>0?Math.round((sumCp/sumCh)/T_CHAT_HR*100):0;
-    var aK=sumKh>0?Math.round((sumKp/sumKh)/T_CALL_HR*100):0;
+    var _wChatT=w===5?T_CHAT_HR_W5:(w===6?T_CHAT_HR_W6:T_CHAT_HR);
+    var _wCallT=w===5?T_CALL_HR_W5:(w===6?T_CALL_HR_W6:T_CALL_HR);
+    var aC=sumCh>0?Math.round((sumCp/sumCh)/_wChatT*100):0;
+    var aK=sumKh>0?Math.round((sumKp/sumKh)/_wCallT*100):0;
     var cC=rc(aC),kC=rc(aK);
     // CSAT
     var ccVals=wg.filter(function(a){return a.csatChat!==null;});
@@ -1383,8 +1389,8 @@ function renderAgents(){
   var data=baseData.filter(function(a){
     if(agTL && a.tl!==agTL) return false;
     if(wave && a.w!=wave) return false;
-    var chatT=a.w===5?T_CHAT_HR_W5:T_CHAT_HR;
-    var callT=a.w===5?T_CALL_HR_W5:T_CALL_HR;
+    var chatT=a.w===5?T_CHAT_HR_W5:(a.w===6?T_CHAT_HR_W6:T_CHAT_HR);
+    var callT=a.w===5?T_CALL_HR_W5:(a.w===6?T_CALL_HR_W6:T_CALL_HR);
     if(agMeta==='meta' && !(a.chatPph>=chatT && a.callPph>=callT)) return false;
     if(agMeta==='below' && (a.chatPph>=chatT && a.callPph>=callT)) return false;
     if(search && a.name.toLowerCase().indexOf(search)===-1) return false;
@@ -1551,8 +1557,8 @@ function renderDailyTable() {
     });
     var chatPph = chatHrs>0 ? Math.round(chatConvs/chatHrs*10)/10 : 0;
     var callPph = callHrs>0 ? Math.round(callConvs/callHrs*10)/10 : 0;
-    var chatT = ag.w===5?T_CHAT_HR_W5:T_CHAT_HR;
-    var callT = ag.w===5?T_CALL_HR_W5:T_CALL_HR;
+    var chatT = ag.w===5?T_CHAT_HR_W5:(ag.w===6?T_CHAT_HR_W6:T_CHAT_HR);
+    var callT = ag.w===5?T_CALL_HR_W5:(ag.w===6?T_CALL_HR_W6:T_CALL_HR);
     var chatAch = chatHrs>0&&chatConvs>0 ? Math.round(chatPph/chatT*100) : 0;
     var callAch = callHrs>0&&callConvs>0 ? Math.round(callPph/callT*100) : 0;
     rows.push({
@@ -1570,7 +1576,7 @@ function renderDailyTable() {
     return b[sortBy]-a[sortBy];
   });
 
-  var waveColors2 = {1:'#a78bfa',2:'#34d399',3:'#fb923c',4:'#fbbf24',5:'#38bdf8'};
+  var waveColors2 = {1:'#a78bfa',2:'#34d399',3:'#fb923c',4:'#fbbf24',5:'#38bdf8',6:'#f472b6'};
   var dayLabel = dayFilter==='all'
     ? (days.length > 1 ? 'Días '+days[0]+'–'+days[days.length-1] : 'Día '+days[0])
     : (days[0]+' '+dayNames[new Date(_activeYear,_activeMonth-1,days[0]).getDay()]+' '+MES_ABREV[_activeMonth]);
@@ -1587,8 +1593,8 @@ function renderDailyTable() {
   html += '</tr></thead><tbody>';
 
   rows.forEach(function(r, idx) {
-    var chatT = r.w===5?T_CHAT_HR_W5:T_CHAT_HR;
-    var callT = r.w===5?T_CALL_HR_W5:T_CALL_HR;
+    var chatT = r.w===5?T_CHAT_HR_W5:(r.w===6?T_CHAT_HR_W6:T_CHAT_HR);
+    var callT = r.w===5?T_CALL_HR_W5:(r.w===6?T_CALL_HR_W6:T_CALL_HR);
     var cChat = r.chatPph>0 ? (r.chatPph>=chatT?'#22c55e':'#ef4444') : '#334155';
     var cCall = r.callPph>0 ? (r.callPph>=callT?'#22c55e':'#ef4444') : '#334155';
     var cAch  = function(v){ return v>=100?'#22c55e':v>=85?'#fbbf24':'#ef4444'; };
@@ -2089,8 +2095,8 @@ function openAgentModal(agName) {
 
     // KPI strip
     var pphC = ag.chatPph, pphK = ag.callPph;
-    var chatTgt = ag.w===5 ? T_CHAT_HR_W5 : T_CHAT_HR;
-    var callTgt = ag.w===5 ? T_CALL_HR_W5 : T_CALL_HR;
+    var chatTgt = ag.w===5?T_CHAT_HR_W5:(ag.w===6?T_CHAT_HR_W6:T_CHAT_HR);
+    var callTgt = ag.w===5?T_CALL_HR_W5:(ag.w===6?T_CALL_HR_W6:T_CALL_HR);
     var cC = pphC >= chatTgt ? '#22c55e' : '#ef4444';
     var cK = pphK >= callTgt ? '#22c55e' : '#ef4444';
     var cCS = ag.csatChat >= T_CSAT_CHAT ? '#f472b6' : '#f87171';
@@ -2111,7 +2117,7 @@ function openAgentModal(agName) {
       kpiMini('Occ. Llamadas', occCallVal, occSubOf(ag.occCall), occColorOf(ag.occCall), 'rgba(52,211,153,0.06)');
 
     // Update chart target label for Wave 5
-    var tLabel = ag.w===5 ? 'Target '+T_CHAT_HR_W5+' / '+T_CALL_HR_W5 : 'Target '+T_CHAT_HR+' / '+T_CALL_HR;
+    var tLabel = ag.w===5 ? 'Target '+T_CHAT_HR_W5+' / '+T_CALL_HR_W5 : (ag.w===6 ? 'Target '+T_CHAT_HR_W6+' / '+T_CALL_HR_W6 : 'Target '+T_CHAT_HR+' / '+T_CALL_HR);
     var tLabelEl = document.getElementById('agChartTargetLabel');
     if (tLabelEl) tLabelEl.textContent = tLabel;
 
@@ -2172,7 +2178,8 @@ function _drawAgChart() {
   var rawKey = ALIAS_MAP[_agCurrent.name] || _agCurrent.name;
   var src = _agTab === 'chat' ? DAILY_CHAT[rawKey] : DAILY_CALL[rawKey];
   var isW5 = _agCurrent && _agCurrent.w === 5;
-  var target = _agTab === 'chat' ? (isW5 ? T_CHAT_HR_W5 : T_CHAT_HR) : (isW5 ? T_CALL_HR_W5 : T_CALL_HR);
+  var isW6 = _agCurrent && _agCurrent.w === 6;
+  var target = _agTab === 'chat' ? (isW5 ? T_CHAT_HR_W5 : (isW6 ? T_CHAT_HR_W6 : T_CHAT_HR)) : (isW5 ? T_CALL_HR_W5 : (isW6 ? T_CALL_HR_W6 : T_CALL_HR));
   var accentColor = _agTab === 'chat' ? '#60a5fa' : '#34d399';
   var achTarget = _agTab === 'chat' ? T_CHAT_HR : T_CALL_HR;
 
@@ -2371,7 +2378,7 @@ buildRow = function(a,rank,avatarBg,sb,wc,tlName,borderColor){
 // Re-render agents so the hook takes effect
 renderAgents();
 
-document.getElementById('lastUpdated').textContent='03/08/2026 21:49';
+document.getElementById('lastUpdated').textContent='03/08/2026 22:53';
 populateMonthSelect();
 setActiveMonth(LATEST_MONTH);
 </script>
