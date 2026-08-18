@@ -185,7 +185,7 @@ select.ag-select,input.ag-search{font-size:12px;padding:5px 9px;font-family:'Plu
 
 /* league table */
 .league-wrap{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.07)}
-.league-header{display:grid;grid-template-columns:44px 1fr 100px 110px 100px 110px 100px 130px;gap:0;align-items:center;padding:10px 16px;background:#0d1420;border-bottom:1px solid rgba(255,255,255,.08)}
+.league-header{display:grid;grid-template-columns:44px 1fr 100px 100px 140px 100px 130px;gap:0;align-items:center;padding:10px 16px;background:#0d1420;border-bottom:1px solid rgba(255,255,255,.08)}
 .lh-cell{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#475569;text-align:center;line-height:1.4}
 .lh-cell:nth-child(2){text-align:left}
 .ag-list{display:flex;flex-direction:column}
@@ -202,7 +202,14 @@ select.ag-select,input.ag-search{font-size:12px;padding:5px 9px;font-family:'Plu
 .div-avatar-more{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--muted);background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.08);margin-left:-4px}
 
 /* agent rows */
-.ag-row{display:grid;grid-template-columns:44px 1fr 100px 110px 100px 110px 100px 130px;gap:0;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;border-left:3px solid transparent}
+.ag-row{display:grid;grid-template-columns:44px 1fr 100px 100px 140px 100px 130px;gap:0;align-items:center;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;border-left:3px solid transparent}
+.ag-quality-cell{text-align:center}
+.q-dot-row{display:flex;gap:6px;justify-content:center;margin-bottom:3px}
+.q-dot{width:9px;height:9px;border-radius:50%;display:inline-block;cursor:help}
+.q-dot.q-ok{background:#22c55e}
+.q-dot.q-warn{background:#fbbf24}
+.q-dot.q-bad{background:#ef4444}
+.q-label{font-size:10px;color:var(--muted)}
 .ag-row:hover{background:rgba(255,255,255,.03)}
 .ag-rank-cell{display:flex;align-items:center;justify-content:center}
 .ag-rank-num{font-size:12px;font-weight:700;color:var(--faint);font-family:monospace}
@@ -239,7 +246,16 @@ select.ag-select,input.ag-search{font-size:12px;padding:5px 9px;font-family:'Plu
 .ag-modal-close{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.07);border:none;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:background .15s}
 .ag-modal-close:hover{background:rgba(255,255,255,.14)}
 /* KPI strip */
-.ag-kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;padding:1rem 1.6rem}
+.ag-kpi-strip{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:1rem 1.6rem}
+.ag-channel-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px 16px}
+.ag-channel-title{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.ag-metric-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12.5px;color:var(--muted)}
+.ag-metric-row:last-child{border-bottom:none}
+.ag-metric-val{font-family:'DM Mono',monospace;font-weight:600;color:var(--text)}
+.ag-metric-val.ag-mv-good{color:#22c55e}
+.ag-metric-val.ag-mv-bad{color:#ef4444}
+.ag-metric-val.ag-mv-neutral{color:#475569}
+.ag-metric-target{font-size:10px;color:var(--muted);font-weight:400}
 .ag-kpi-mini{border-radius:10px;padding:10px 12px;border:1px solid rgba(255,255,255,.06);text-align:center}
 .ag-kpi-mini-lbl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-bottom:6px}
 .ag-kpi-mini-val{font-size:20px;font-weight:700;font-family:monospace;line-height:1}
@@ -1444,7 +1460,7 @@ function renderAll(){
 }
 // renderAll called at end after all vars defined
 
-var SORT_COL={chatPph:2,csatChat:3,callPph:4,csatCall:5,occ:6,name:1};
+var SORT_COL={chatPph:2,callPph:3,csatChat:4,csatCall:4,occ:5,name:1};
 
 function highlightCol(sortKey){
   var colIdx = SORT_COL[sortKey] || 0;
@@ -1522,6 +1538,28 @@ function occCell(val){
   if(val===null||typeof val==='undefined') return '<div class="ag-cell"><span class="ag-cell-val" style="color:#334155">—</span></div>';
   var col = (val/100)<OCC_LOW ? '#ef4444' : ((val/100)<=OCC_HIGH ? '#22c55e' : '#fbbf24');
   return '<div class="ag-cell"><span class="ag-cell-val" style="color:'+col+'">'+val.toFixed(1)+'</span><span class="ag-cell-unit">%</span></div>';
+}
+
+function fmtPctOrDash(v){ return (v===null||typeof v==='undefined') ? '—' : v.toFixed(1)+'%'; }
+function qualityCell(a){
+  var metrics = [
+    {label:'CSAT', vChat:a.csatChat, tChat:T_CSAT_CHAT, vCall:a.csatCall, tCall:T_CSAT_CALL},
+    {label:'Request Rate', vChat:a.requestChat, tChat:T_REQUEST_CHAT, vCall:a.requestCall, tCall:T_REQUEST_CALL},
+    {label:'Response Rate', vChat:a.responseChat, tChat:T_RESPONSE_CHAT, vCall:a.responseCall, tCall:T_RESPONSE_CALL}
+  ];
+  var alerts=0;
+  var dotsHtml = metrics.map(function(m){
+    var chatOk = (m.vChat===null||typeof m.vChat==='undefined') ? null : m.vChat>=m.tChat;
+    var callOk = (m.vCall===null||typeof m.vCall==='undefined') ? null : m.vCall>=m.tCall;
+    var cls;
+    if(chatOk===false || callOk===false){ cls='bad'; alerts++; }
+    else if(chatOk===null && callOk===null){ cls='warn'; }
+    else { cls='ok'; }
+    var title = m.label+' — Chat: '+fmtPctOrDash(m.vChat)+' (target '+m.tChat+'%) · Call: '+fmtPctOrDash(m.vCall)+' (target '+m.tCall+'%)';
+    return '<span class="q-dot q-'+cls+'" title="'+title.replace(/"/g,'&quot;')+'"></span>';
+  }).join('');
+  var label = alerts===0 ? 'Todo en orden' : (alerts+' alerta'+(alerts>1?'s':''));
+  return '<div class="ag-quality-cell"><div class="q-dot-row">'+dotsHtml+'</div><div class="q-label">'+label+'</div></div>';
 }
 
 function renderAgents(){
@@ -1627,9 +1665,8 @@ function buildRow(a,rank,avatarBg,sb,wc,tlName,borderColor){
     +(a.fs?'<span class="ag-meta-sep">·</span><span class="ag-meta-tag" style="color:#f97316">Activo hasta '+formatFechaCorta(a.fs)+'</span>':'')
     +'</div></div></div>'
     +agMetricCell(a.chatPph, true)
-    +agCsatCell(a.csatChat, T_CSAT_CHAT)
     +agMetricCell(a.callPph, false)
-    +agCsatCell(a.csatCall, T_CSAT_CALL)
+    +qualityCell(a)
     +occCell(typeof a.occ!=='undefined'?a.occ:null)
     +'<span class="ag-status '+sb.cls+'">'+sb.label+'</span>'
     +'</div>';
@@ -1816,11 +1853,10 @@ renderDailyTable();
       <div class="lh-cell" data-col="0">#</div>
       <div class="lh-cell" data-col="1" style="text-align:left">Agente · Wave · Supervisor · Días</div>
       <div class="lh-cell" data-col="2">Chats<br>por hora</div>
-      <div class="lh-cell" data-col="3">CSAT<br>Chats</div>
-      <div class="lh-cell" data-col="4">Llamadas<br>por hora</div>
-      <div class="lh-cell" data-col="5">CSAT<br>Llamadas</div>
-      <div class="lh-cell" data-col="6">Occupancy</div>
-      <div class="lh-cell" data-col="7">Estado</div>
+      <div class="lh-cell" data-col="3">Llamadas<br>por hora</div>
+      <div class="lh-cell" data-col="4">Calidad</div>
+      <div class="lh-cell" data-col="5">Occupancy</div>
+      <div class="lh-cell" data-col="6">Estado</div>
     </div>
     <div class="ag-list" id="agList"></div>
   </div>
@@ -2267,12 +2303,8 @@ function openAgentModal(agName) {
     var occCallVal = (typeof ag.occCall !== 'undefined' && ag.occCall !== null) ? ag.occCall.toFixed(1)+'%' : '—';
 
     document.getElementById('agKpiStrip').innerHTML =
-      kpiMini('Chats / hr', pphC.toFixed(1)+'/hr', 'Target '+chatTgt, cC, 'rgba(96,165,250,0.08)') +
-      kpiMini('Llamadas / hr', pphK.toFixed(1)+'/hr', 'Target '+callTgt, cK, 'rgba(52,211,153,0.08)') +
-      kpiMini('CSAT Chat', cs5+'/5', (ag.chatPct||'—')+'%', cCS, 'rgba(251,191,36,0.06)') +
-      kpiMini('CSAT Calls', ck5+'/5', (ag.callPct||'—')+'%', cCK, 'rgba(244,114,182,0.06)') +
-      kpiMini('Occ. Chat', occChatVal, occSubOf(ag.occChat), occColorOf(ag.occChat), 'rgba(96,165,250,0.06)') +
-      kpiMini('Occ. Llamadas', occCallVal, occSubOf(ag.occCall), occColorOf(ag.occCall), 'rgba(52,211,153,0.06)');
+      channelCard('Chat', '#f472b6', pphC, chatTgt, ag.csatChat, T_CSAT_CHAT, ag.occChat, ag.requestChat, T_REQUEST_CHAT, ag.responseChat, T_RESPONSE_CHAT) +
+      channelCard('Call', '#818cf8', pphK, callTgt, ag.csatCall, T_CSAT_CALL, ag.occCall, ag.requestCall, T_REQUEST_CALL, ag.responseCall, T_RESPONSE_CALL);
 
     // Update chart target label for Wave 5
     var tLabel = ag.w===5 ? 'Target '+T_CHAT_HR_W5+' / '+T_CALL_HR_W5 : (ag.w===6 ? 'Target '+T_CHAT_HR_W6+' / '+T_CALL_HR_W6 : 'Target '+T_CHAT_HR+' / '+T_CALL_HR);
@@ -2317,6 +2349,36 @@ function kpiMini(lbl, val, sub, col, bg) {
     '<p class="ag-kpi-mini-val" style="color:'+col+'">'+val+'</p>' +
     '<p class="ag-kpi-mini-sub">'+sub+'</p>' +
     '</div>';
+}
+
+function metricRow(label, val, target, isPct){
+  var display, cls;
+  if(val===null || typeof val==='undefined'){ display='—'; cls='neutral'; }
+  else {
+    display = isPct ? val.toFixed(1)+'%' : val.toFixed(1)+'/hr';
+    cls = val>=target ? 'good' : 'bad';
+  }
+  var targetTxt = isPct ? ('target '+target+'%') : ('target '+target+'/hr');
+  return '<div class="ag-metric-row"><span>'+label+'</span><span class="ag-metric-val ag-mv-'+cls+'">'+display+' <span class="ag-metric-target">· '+targetTxt+'</span></span></div>';
+}
+function occMetricRow(label, val){
+  var display = (val===null||typeof val==='undefined') ? '—' : val.toFixed(1)+'%';
+  var color = occColorOf(val);
+  var sub = occSubOf(val) || '';
+  return '<div class="ag-metric-row"><span>'+label+'</span><span class="ag-metric-val" style="color:'+color+'">'+display+' <span class="ag-metric-target">'+sub+'</span></span></div>';
+}
+function channelCard(title, color, pph, pphTarget, csat, csatTarget, occVal, req, reqTarget, resp, respTarget){
+  var csatDisplay = (csat===null||typeof csat==='undefined') ? '—' : (Math.round(csat/100*5*100)/100)+'/5';
+  var csatOk = (csat!==null && typeof csat!=='undefined') ? csat>=csatTarget : null;
+  var csatCls = csatOk===null?'neutral':(csatOk?'good':'bad');
+  return '<div class="ag-channel-card">'
+    +'<div class="ag-channel-title" style="color:'+color+'">'+title+'</div>'
+    +metricRow('PPH', pph, pphTarget, false)
+    +'<div class="ag-metric-row"><span>CSAT</span><span class="ag-metric-val ag-mv-'+csatCls+'">'+csatDisplay+'</span></div>'
+    +occMetricRow('Occupancy', occVal)
+    +metricRow('Request Rate', req, reqTarget, true)
+    +metricRow('Response Rate', resp, respTarget, true)
+    +'</div>';
 }
 
 function setAgTab(tab) {
@@ -2536,7 +2598,7 @@ buildRow = function(a,rank,avatarBg,sb,wc,tlName,borderColor){
 // Re-render agents so the hook takes effect
 renderAgents();
 
-document.getElementById('lastUpdated').textContent='18/08/2026 16:06';
+document.getElementById('lastUpdated').textContent='18/08/2026 16:32';
 populateMonthSelect();
 setActiveMonth(LATEST_MONTH);
 </script>
