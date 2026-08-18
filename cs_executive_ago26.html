@@ -262,6 +262,7 @@ select.ag-select,input.ag-search{font-size:12px;padding:5px 9px;font-family:'Plu
 .ag-modal-close:hover{background:rgba(255,255,255,.14)}
 /* KPI strip */
 .ag-kpi-strip{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:1rem 1.6rem}
+.ag-kpi-strip-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 .ag-channel-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px 16px}
 .ag-channel-title{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:10px}
 .ag-metric-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12.5px;color:var(--muted)}
@@ -427,6 +428,7 @@ function applyCustomDateFilter() {
 <script>
 var T_CHAT=110,T_CALL=35,T_CSAT_CHAT=75,T_CSAT_CALL=92;
 var T_REQUEST_CHAT=90,T_REQUEST_CALL=90,T_RESPONSE_CHAT=90,T_RESPONSE_CALL=90;
+var T_QA_SCORE=95;
 var OCC_LOW=0.6, OCC_HIGH=0.85; // debe coincidir con CONCURRENCIA_CHAT/OCC_LOW/OCC_HIGH del Apps Script
 var T_CHAT_HR=12,T_CALL_HR=5;
 var T_CHAT_HR_W5=T_CHAT_HR,T_CALL_HR_W5=T_CALL_HR; // Wave 5 ya no tiene métricas diferenciales (mismo target que el resto)
@@ -437,7 +439,7 @@ var WAVE_START={1:'17 feb 2026',2:'2 mar 2026',3:'16 mar 2026',4:'6 abr 2026',5:
 var MONTHS_DATA = {
   "2026-08": {
     label: "Agosto 2026",
-    targets: {chat:11,call:5,csatChat:85,csatCall:95,requestChat:40,requestCall:85,responseChat:20,responseCall:50},
+    targets: {chat:11,call:5,csatChat:85,csatCall:95,requestChat:40,requestCall:85,responseChat:20,responseCall:50,qaScore:95},
     AG: [
     {name:"Carla Beltran",w:2,tl:"JG",cd:1,ch:51.17,cp:606,ca:108,kd:1,kh:42.83,kp:160,ka:75,csatChat:95.24000000000001,csatCall:95.28,requestChat:13.569230769230769,requestCall:81.73,responseChat:7.590909090909091,responseCall:56.470000000000006,attainmentTotal:93.43058163299092,qaScore:98.3,qaAutofails:null,occ:68.74763593380615,occStatus:"low",occChat:82.56356806288406,occCall:52.241419565724954,dias:0,fs:null,foto:"https://avatars.slack-edge.com/2026-07-14/11616974551680_8944558a10929196f9fe_original.png"},
     {name:"Carlos Pinzón",w:3,tl:"JG",cd:1,ch:38.33,cp:543,ca:129,kd:1,kh:64.17,kp:244,ka:76,csatChat:94.45,csatCall:98.28333333333335,requestChat:11.860000000000001,requestCall:76.675,responseChat:5.5125,responseCall:52.775,attainmentTotal:95.3282259715797,qaScore:97.9,qaAutofails:null,occ:51.25029810298103,occStatus:"low",occChat:46.86610429892454,occCall:53.86906307897426,dias:0,fs:null,foto:"https://avatars.slack-edge.com/2026-03-16/10709592721142_962c5e46eb676da1753b_original.jpg"},
@@ -817,6 +819,7 @@ function setActiveMonth(key) {
   T_REQUEST_CALL = (md.targets.requestCall!==undefined && md.targets.requestCall!==null) ? md.targets.requestCall : 90;
   T_RESPONSE_CHAT = (md.targets.responseChat!==undefined && md.targets.responseChat!==null) ? md.targets.responseChat : 90;
   T_RESPONSE_CALL = (md.targets.responseCall!==undefined && md.targets.responseCall!==null) ? md.targets.responseCall : 90;
+  T_QA_SCORE = (md.targets.qaScore!==undefined && md.targets.qaScore!==null) ? md.targets.qaScore : 95;
 
   AG = md.AG.slice();
   applyDerivedFields(AG);
@@ -1197,26 +1200,6 @@ function renderKPI(){
       (OCC_LOW*100)+'–'+(OCC_HIGH*100)+'% óptimo',
       avgOcc!==null?avgOcc+' <span style="font-size:13px;color:rgba(255,255,255,.3)">%</span>':'N/D',
       (occAchPct!==null?occAchPct:'—'), occInRange.length, occVals.length-occInRange.length, occVals.length, 'occAbove','occ','%', occColor
-    )
-    +kpiCard('kpi-green','Request Rate Chat',
-      '≥'+T_REQUEST_CHAT+'%',
-      avgReqC!==null?avgReqC+' <span style="font-size:13px;color:rgba(255,255,255,.3)">%</span>':'N/D',
-      (reqcAchPct!==null?reqcAchPct:'—'), reqcAbove.length, reqcVals.length-reqcAbove.length, reqcVals.length, 'reqcAbove','requestChat','%', rcReqC
-    )
-    +kpiCard('kpi-blue','Request Rate Llamadas',
-      '≥'+T_REQUEST_CALL+'%',
-      avgReqK!==null?avgReqK+' <span style="font-size:13px;color:rgba(255,255,255,.3)">%</span>':'N/D',
-      (reqkAchPct!==null?reqkAchPct:'—'), reqkAbove.length, reqkVals.length-reqkAbove.length, reqkVals.length, 'reqkAbove','requestCall','%', rcReqK
-    )
-    +kpiCard('kpi-gold','Response Rate Chat',
-      '≥'+T_RESPONSE_CHAT+'%',
-      avgRespC!==null?avgRespC+' <span style="font-size:13px;color:rgba(255,255,255,.3)">%</span>':'N/D',
-      (respcAchPct!==null?respcAchPct:'—'), respcAbove.length, respcVals.length-respcAbove.length, respcVals.length, 'respcAbove','responseChat','%', rcRespC
-    )
-    +kpiCard('kpi-purple','Response Rate Llamadas',
-      '≥'+T_RESPONSE_CALL+'%',
-      avgRespK!==null?avgRespK+' <span style="font-size:13px;color:rgba(255,255,255,.3)">%</span>':'N/D',
-      (respkAchPct!==null?respkAchPct:'—'), respkAbove.length, respkVals.length-respkAbove.length, respkVals.length, 'respkAbove','responseCall','%', rcRespK
     );
 }
 
@@ -2358,8 +2341,12 @@ function openAgentModal(agName) {
     var occCallVal = (typeof ag.occCall !== 'undefined' && ag.occCall !== null) ? ag.occCall.toFixed(1)+'%' : '—';
 
     document.getElementById('agKpiStrip').innerHTML =
-      channelCard('Chat', '#f472b6', pphC, chatTgt, ag.csatChat, T_CSAT_CHAT, ag.occChat, ag.requestChat, T_REQUEST_CHAT, ag.responseChat, T_RESPONSE_CHAT) +
-      channelCard('Call', '#818cf8', pphK, callTgt, ag.csatCall, T_CSAT_CALL, ag.occCall, ag.requestCall, T_REQUEST_CALL, ag.responseCall, T_RESPONSE_CALL);
+      '<div class="ag-kpi-strip-row">'
+      + productivityCard(pphC, chatTgt, pphK, callTgt)
+      + qaCard(ag.qaScore, T_QA_SCORE, ag.attainmentTotal, ag.qaAutofails)
+      + '</div>'
+      + channelCard('Chat', '#f472b6', ag.csatChat, T_CSAT_CHAT, ag.occChat, ag.requestChat, T_REQUEST_CHAT, ag.responseChat, T_RESPONSE_CHAT)
+      + channelCard('Call', '#818cf8', ag.csatCall, T_CSAT_CALL, ag.occCall, ag.requestCall, T_REQUEST_CALL, ag.responseCall, T_RESPONSE_CALL);
 
     // Update chart target label for Wave 5
     var tLabel = ag.w===5 ? 'Target '+T_CHAT_HR_W5+' / '+T_CALL_HR_W5 : (ag.w===6 ? 'Target '+T_CHAT_HR_W6+' / '+T_CALL_HR_W6 : 'Target '+T_CHAT_HR+' / '+T_CALL_HR);
@@ -2422,17 +2409,43 @@ function occMetricRow(label, val){
   var sub = occSubOf(val) || '';
   return '<div class="ag-metric-row"><span>'+label+'</span><span class="ag-metric-val" style="color:'+color+'">'+display+' <span class="ag-metric-target">'+sub+'</span></span></div>';
 }
-function channelCard(title, color, pph, pphTarget, csat, csatTarget, occVal, req, reqTarget, resp, respTarget){
+function channelCard(title, color, csat, csatTarget, occVal, req, reqTarget, resp, respTarget){
   var csatDisplay = (csat===null||typeof csat==='undefined') ? '—' : (Math.round(csat/100*5*100)/100)+'/5';
   var csatOk = (csat!==null && typeof csat!=='undefined') ? csat>=csatTarget : null;
   var csatCls = csatOk===null?'neutral':(csatOk?'good':'bad');
   return '<div class="ag-channel-card">'
     +'<div class="ag-channel-title" style="color:'+color+'">'+title+'</div>'
-    +metricRow('PPH', pph, pphTarget, false)
     +'<div class="ag-metric-row"><span>CSAT</span><span class="ag-metric-val ag-mv-'+csatCls+'">'+csatDisplay+'</span></div>'
     +occMetricRow('Occupancy', occVal)
     +metricRow('Request Rate', req, reqTarget, true)
     +metricRow('Response Rate', resp, respTarget, true)
+    +'</div>';
+}
+
+// Productividad: combina Chats/hr y Llamadas/hr en una sola tarjeta, en vez de repetirlos
+// dentro de cada tarjeta de canal — así no hay que buscar el mismo tipo de dato en dos lados.
+function productivityCard(pphC, chatTarget, pphK, callTarget){
+  return '<div class="ag-channel-card">'
+    +'<div class="ag-channel-title" style="color:#38bdf8">Productividad</div>'
+    +metricRow('Chats PPH', pphC, chatTarget, false)
+    +metricRow('Llamadas PPH', pphK, callTarget, false)
+    +'</div>';
+}
+
+// QA: score de calidad (auditorías), Attainment Total (score ponderado del mes) y autofails,
+// visibles por agente en el mismo lugar donde ya se ve Productividad y Calidad por canal.
+function qaCard(qaScore, qaTarget, attainmentTotal, autofails){
+  var qaDisplay = (qaScore===null||typeof qaScore==='undefined') ? '—' : qaScore.toFixed(1);
+  var qaCls = (qaScore===null||typeof qaScore==='undefined') ? 'neutral' : (qaScore>=qaTarget?'good':'bad');
+  var attDisplay = (attainmentTotal===null||typeof attainmentTotal==='undefined') ? '—' : attainmentTotal.toFixed(1)+'%';
+  var attCls = (attainmentTotal===null||typeof attainmentTotal==='undefined') ? 'neutral' : (attainmentTotal>=100?'good':'bad');
+  var autofailsText = autofails ? autofails : '✅ Sin autofails';
+  var autofailsCls = autofails ? 'bad' : 'good';
+  return '<div class="ag-channel-card">'
+    +'<div class="ag-channel-title" style="color:#a78bfa">QA</div>'
+    +'<div class="ag-metric-row"><span>QA Score</span><span class="ag-metric-val ag-mv-'+qaCls+'">'+qaDisplay+' <span class="ag-metric-target">· target '+qaTarget+'</span></span></div>'
+    +'<div class="ag-metric-row"><span>Attainment Total</span><span class="ag-metric-val ag-mv-'+attCls+'">'+attDisplay+' <span class="ag-metric-target">· target 100%</span></span></div>'
+    +'<div class="ag-metric-row"><span>Autofails</span><span class="ag-metric-val ag-mv-'+autofailsCls+'">'+autofailsText+'</span></div>'
     +'</div>';
 }
 
@@ -2653,7 +2666,7 @@ buildRow = function(a,rank,avatarBg,sb,wc,tlName,borderColor){
 // Re-render agents so the hook takes effect
 renderAgents();
 
-document.getElementById('lastUpdated').textContent='18/08/2026 17:51';
+document.getElementById('lastUpdated').textContent='18/08/2026 18:06';
 populateMonthSelect();
 setActiveMonth(LATEST_MONTH);
 </script>
