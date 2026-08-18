@@ -261,8 +261,7 @@ select.ag-select,input.ag-search{font-size:12px;padding:5px 9px;font-family:'Plu
 .ag-modal-close{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.07);border:none;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:background .15s}
 .ag-modal-close:hover{background:rgba(255,255,255,.14)}
 /* KPI strip */
-.ag-kpi-strip{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:1rem 1.6rem}
-.ag-kpi-strip-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.ag-kpi-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:1rem 1.6rem}
 .ag-channel-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px 16px}
 .ag-channel-title{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:10px}
 .ag-metric-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12.5px;color:var(--muted)}
@@ -2341,10 +2340,7 @@ function openAgentModal(agName) {
     var occCallVal = (typeof ag.occCall !== 'undefined' && ag.occCall !== null) ? ag.occCall.toFixed(1)+'%' : '—';
 
     document.getElementById('agKpiStrip').innerHTML =
-      '<div class="ag-kpi-strip-row">'
-      + productivityCard(pphC, chatTgt, pphK, callTgt)
-      + qaCard(ag.qaScore, T_QA_SCORE, ag.attainmentTotal, ag.qaAutofails)
-      + '</div>'
+      qaCard(ag.qaScore, T_QA_SCORE, ag.qaAutofails)
       + channelCard('Chat', '#f472b6', ag.csatChat, T_CSAT_CHAT, ag.occChat, ag.requestChat, T_REQUEST_CHAT, ag.responseChat, T_RESPONSE_CHAT)
       + channelCard('Call', '#818cf8', ag.csatCall, T_CSAT_CALL, ag.occCall, ag.requestCall, T_REQUEST_CALL, ag.responseCall, T_RESPONSE_CALL);
 
@@ -2422,29 +2418,16 @@ function channelCard(title, color, csat, csatTarget, occVal, req, reqTarget, res
     +'</div>';
 }
 
-// Productividad: combina Chats/hr y Llamadas/hr en una sola tarjeta, en vez de repetirlos
-// dentro de cada tarjeta de canal — así no hay que buscar el mismo tipo de dato en dos lados.
-function productivityCard(pphC, chatTarget, pphK, callTarget){
-  return '<div class="ag-channel-card">'
-    +'<div class="ag-channel-title" style="color:#38bdf8">Productividad</div>'
-    +metricRow('Chats PPH', pphC, chatTarget, false)
-    +metricRow('Llamadas PPH', pphK, callTarget, false)
-    +'</div>';
-}
-
-// QA: score de calidad (auditorías), Attainment Total (score ponderado del mes) y autofails,
-// visibles por agente en el mismo lugar donde ya se ve Productividad y Calidad por canal.
-function qaCard(qaScore, qaTarget, attainmentTotal, autofails){
+// QA: score de calidad (auditorías) y autofails del agente, solo eso — Attainment Total se
+// quitó de aquí por ser un score compuesto que mezclaba varias cosas, no un dato de QA en sí.
+function qaCard(qaScore, qaTarget, autofails){
   var qaDisplay = (qaScore===null||typeof qaScore==='undefined') ? '—' : qaScore.toFixed(1);
   var qaCls = (qaScore===null||typeof qaScore==='undefined') ? 'neutral' : (qaScore>=qaTarget?'good':'bad');
-  var attDisplay = (attainmentTotal===null||typeof attainmentTotal==='undefined') ? '—' : attainmentTotal.toFixed(1)+'%';
-  var attCls = (attainmentTotal===null||typeof attainmentTotal==='undefined') ? 'neutral' : (attainmentTotal>=100?'good':'bad');
   var autofailsText = autofails ? autofails : '✅ Sin autofails';
   var autofailsCls = autofails ? 'bad' : 'good';
   return '<div class="ag-channel-card">'
     +'<div class="ag-channel-title" style="color:#a78bfa">QA</div>'
     +'<div class="ag-metric-row"><span>QA Score</span><span class="ag-metric-val ag-mv-'+qaCls+'">'+qaDisplay+' <span class="ag-metric-target">· target '+qaTarget+'</span></span></div>'
-    +'<div class="ag-metric-row"><span>Attainment Total</span><span class="ag-metric-val ag-mv-'+attCls+'">'+attDisplay+' <span class="ag-metric-target">· target 100%</span></span></div>'
     +'<div class="ag-metric-row"><span>Autofails</span><span class="ag-metric-val ag-mv-'+autofailsCls+'">'+autofailsText+'</span></div>'
     +'</div>';
 }
@@ -2666,7 +2649,7 @@ buildRow = function(a,rank,avatarBg,sb,wc,tlName,borderColor){
 // Re-render agents so the hook takes effect
 renderAgents();
 
-document.getElementById('lastUpdated').textContent='18/08/2026 18:06';
+document.getElementById('lastUpdated').textContent='18/08/2026 18:20';
 populateMonthSelect();
 setActiveMonth(LATEST_MONTH);
 </script>
