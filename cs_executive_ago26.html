@@ -261,7 +261,8 @@ select.ag-select,input.ag-search{font-size:12px;padding:5px 9px;font-family:'Plu
 .ag-modal-close{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.07);border:none;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:background .15s}
 .ag-modal-close:hover{background:rgba(255,255,255,.14)}
 /* KPI strip */
-.ag-kpi-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:1rem 1.6rem}
+.ag-kpi-strip{display:grid;grid-template-columns:1fr 1.3fr 1.3fr;gap:12px;padding:1rem 1.6rem}
+@media(max-width:700px){.ag-kpi-strip{grid-template-columns:1fr}}
 .ag-channel-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px 16px}
 .ag-channel-title{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:10px}
 .ag-metric-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12.5px;color:var(--muted)}
@@ -1632,10 +1633,12 @@ function occCell(val){
 
 function fmtPctOrDash(v){ return (v===null||typeof v==='undefined') ? '—' : v.toFixed(1)+'%'; }
 function qualityCell(a){
+  // Solo CSAT: es la única métrica de esta terna que realmente varía agente por agente.
+  // Request Rate y Response Rate se quitaron de aquí porque casi todo el equipo las incumple
+  // contra el target actual — repetir esa alerta en cada fila es ruido, no señal. Esas dos
+  // siguen visibles como KPI agregado en "Calidad de servicio" más arriba.
   var metrics = [
-    {label:'CSAT', abbr:'CSAT', vChat:a.csatChat, tChat:T_CSAT_CHAT, vCall:a.csatCall, tCall:T_CSAT_CALL},
-    {label:'Request Rate', abbr:'RR', vChat:a.requestChat, tChat:T_REQUEST_CHAT, vCall:a.requestCall, tCall:T_REQUEST_CALL},
-    {label:'Response Rate', abbr:'RESP', vChat:a.responseChat, tChat:T_RESPONSE_CHAT, vCall:a.responseCall, tCall:T_RESPONSE_CALL}
+    {label:'CSAT', abbr:'CSAT', vChat:a.csatChat, tChat:T_CSAT_CHAT, vCall:a.csatCall, tCall:T_CSAT_CALL}
   ];
   var failing = [];
   var titleParts = [];
@@ -2401,9 +2404,9 @@ function openAgentModal(agName) {
     var occCallVal = (typeof ag.occCall !== 'undefined' && ag.occCall !== null) ? ag.occCall.toFixed(1)+'%' : '—';
 
     document.getElementById('agKpiStrip').innerHTML =
-      qaCard(ag.qaScore, T_QA_SCORE, ag.qaAutofails)
-      + channelCard('Chat', '#f472b6', ag.csatChat, T_CSAT_CHAT, ag.occChat, ag.requestChat, T_REQUEST_CHAT, ag.responseChat, T_RESPONSE_CHAT)
-      + channelCard('Call', '#818cf8', ag.csatCall, T_CSAT_CALL, ag.occCall, ag.requestCall, T_REQUEST_CALL, ag.responseCall, T_RESPONSE_CALL);
+      productivityCard(ag.chatPph, ag.chatPct, ag.callPph, ag.callPct)
+      + channelCard('Chat', '#f472b6', ag.csatChat, T_CSAT_CHAT, ag.occChat, ag.requestChat, T_REQUEST_CHAT, ag.responseChat, T_RESPONSE_CHAT, ag.qaScoreChat, T_QA_SCORE)
+      + channelCard('Call', '#818cf8', ag.csatCall, T_CSAT_CALL, ag.occCall, ag.requestCall, T_REQUEST_CALL, ag.responseCall, T_RESPONSE_CALL, ag.qaScoreCall, T_QA_SCORE);
 
     // Update chart target label for Wave 5
     var tLabel = ag.w===5 ? 'Target '+T_CHAT_HR_W5+' / '+T_CALL_HR_W5 : (ag.w===6 ? 'Target '+T_CHAT_HR_W6+' / '+T_CALL_HR_W6 : 'Target '+T_CHAT_HR+' / '+T_CALL_HR);
@@ -2474,16 +2477,31 @@ function occMetricRow(label, val){
   var sub = occSubOf(val) || '';
   return '<div class="ag-metric-row"><span>'+label+'</span><span class="ag-metric-val" style="color:'+color+'">'+display+' <span class="ag-metric-target">'+sub+'</span></span></div>';
 }
-function channelCard(title, color, csat, csatTarget, occVal, req, reqTarget, resp, respTarget){
+function channelCard(title, color, csat, csatTarget, occVal, req, reqTarget, resp, respTarget, qaScore, qaTarget){
   var csatDisplay = (csat===null||typeof csat==='undefined') ? '—' : (Math.round(csat/100*5*100)/100)+'/5';
   var csatOk = (csat!==null && typeof csat!=='undefined') ? csat>=csatTarget : null;
   var csatCls = csatOk===null?'neutral':(csatOk?'good':'bad');
+  var qaDisplay = (qaScore===null||typeof qaScore==='undefined') ? '—' : qaScore.toFixed(1);
+  var qaCls = (qaScore===null||typeof qaScore==='undefined') ? 'neutral' : (qaScore>=qaTarget?'good':'bad');
   return '<div class="ag-channel-card">'
     +'<div class="ag-channel-title" style="color:'+color+'">'+title+'</div>'
     +'<div class="ag-metric-row"><span>CSAT</span><span class="ag-metric-val ag-mv-'+csatCls+'">'+csatDisplay+'</span></div>'
     +occMetricRow('Occupancy', occVal)
     +metricRow('Request Rate', req, reqTarget, true)
     +metricRow('Response Rate', resp, respTarget, true)
+    +'<div class="ag-metric-row"><span>QA Score</span><span class="ag-metric-val ag-mv-'+qaCls+'">'+qaDisplay+'</span></div>'
+    +'</div>';
+}
+
+// Productividad: PPH real + % de achievement por canal (ya calculado client-side en a.chatPph/
+// a.chatPct/a.callPph/a.callPct, respetando el target especial de Wave 6 en agosto).
+function productivityCard(chatPph, chatPct, callPph, callPct){
+  var chatCls = chatPct>=100?'good':'bad';
+  var callCls = callPct>=100?'good':'bad';
+  return '<div class="ag-channel-card">'
+    +'<div class="ag-channel-title" style="color:#34d399">Productividad</div>'
+    +'<div class="ag-metric-row"><span>💬 Chat</span><span class="ag-metric-val ag-mv-'+chatCls+'">'+chatPph+'/hr <span class="ag-metric-target">· '+chatPct+'%</span></span></div>'
+    +'<div class="ag-metric-row"><span>📞 Call</span><span class="ag-metric-val ag-mv-'+callCls+'">'+callPph+'/hr <span class="ag-metric-target">· '+callPct+'%</span></span></div>'
     +'</div>';
 }
 
@@ -2770,7 +2788,7 @@ buildRow = function(a,rank,avatarBg,sb,wc,tlName,borderColor){
 // Re-render agents so the hook takes effect
 renderAgents();
 
-document.getElementById('lastUpdated').textContent='28/08/2026 08:32';
+document.getElementById('lastUpdated').textContent='28/08/2026 15:55';
 populateMonthSelect();
 setActiveMonth(LATEST_MONTH);
 </script>
