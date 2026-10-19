@@ -954,7 +954,7 @@ function formatFechaCorta(dateStr) {
   return day + ' ' + (MES_ABREV[month] || '');
 }
 
-var AG = [], DAILY_CHAT = {}, DAILY_CALL = {};
+var AG = [], DAILY_CHAT = {}, DAILY_CALL = {}, DAILY_FHR = {}, FHR_MONTH = {};
 var _mpNames = [];
 var _activeMonthKey = '', _activeYear = 0, _activeMonth = 0;
 
@@ -1007,6 +1007,8 @@ function setActiveMonth(key) {
   applyDerivedFields(AG);
   DAILY_CHAT = md.DAILY_CHAT;
   DAILY_CALL = md.DAILY_CALL;
+  DAILY_FHR = md.DAILY_FHR || {};
+  FHR_MONTH = md.FHR_MONTH || {};
   _mpNames = AG.filter(function(a){return a.tl==='MP';}).map(function(a){return a.name;});
 
   document.getElementById('monthHeaderTitle').textContent = 'CS Team · ' + md.label;
@@ -1178,6 +1180,7 @@ function _mMetaCheck(a){
   if(_mVK==='callPct')  return a.callPph >= T_CALL_HR;
   if(_mVK==='csatChat') return a.csatChat >= T_CSAT_CHAT;
   if(_mVK==='csatCall') return a.csatCall >= T_CSAT_CALL;
+  if(_mVK==='fhrPct') return a.fhrPct >= T_FHR;
   return a.chatPph >= T_CHAT_HR && a.callPph >= T_CALL_HR;
 }
 function _mRender(){
@@ -1339,6 +1342,26 @@ function renderKPI(){
   var qaAchPct=avgQA!==null?parseFloat((avgQA/T_QA_SCORE*100).toFixed(1)):null;
   var qaColor=avgQA===null?'#334155':(avgQA>=T_QA_SCORE?'#a78bfa':'#f87171');
 
+  // Primera respuesta humana (Chat): % de chats con primera respuesta humana en menos de 2 minutos.
+  // Cuentan solo los agentes con muestra suficiente; el resultado del equipo usa todos los chats.
+  var fhrMinChats = (_dateFilterMode === 'custom' && _kpiDateFrom === _kpiDateTo) ? FHR_MIN_CHATS_DIA : FHR_MIN_CHATS;
+  var fhrChatsTot = 0, fhrU2Tot = 0, fhrVals = [];
+  d.forEach(function(a){
+    var f = fhrSumas(a.name);
+    fhrChatsTot += f.c; fhrU2Tot += f.u2;
+    if (f.c >= fhrMinChats) {
+      var c = {};
+      for (var k in a) c[k] = a[k];
+      c.fhrPct = Math.round(f.u2 / f.c * 1000) / 10;
+      c.fhrChats = f.c;
+      fhrVals.push(c);
+    }
+  });
+  var fhrTeamPct = fhrChatsTot > 0 ? parseFloat((fhrU2Tot / fhrChatsTot * 100).toFixed(1)) : null;
+  var fhrAbove = fhrVals.filter(function(a){ return a.fhrPct >= T_FHR; });
+  var fhrAchPct = fhrTeamPct !== null ? parseFloat((fhrTeamPct / T_FHR * 100).toFixed(1)) : null;
+  var fhrColor = fhrTeamPct === null ? '#334155' : (fhrTeamPct >= T_FHR ? '#22c55e' : '#f87171');
+
   // onclick strings for clickable counts
   var chatAboveOnclick="openModal('Achievement Chat — en meta','Agentes con chatPph ≥ 12/hr ("+chatAbove.length+"/"+n+")','__chatAbove__','chatPph','/hr',function(v){return v>=T_CHAT_HR?'#22c55e':'#f97316';})";
   var callAboveOnclick="openModal('Achievement Calls — en meta','Agentes con callPph ≥ 5/hr ("+callAbove.length+"/"+n+")','__callAbove__','callPph','/hr',function(v){return v>=T_CALL_HR?'#22c55e':'#f97316';})";
@@ -1354,6 +1377,7 @@ function renderKPI(){
     ckAbove:ckVals,  // agents with CSAT call data
     occAbove:occVals, // agents with Occupancy data
     qaAbove:qaVals,  // agents with QA data
+    fhrAbove:fhrVals, // agents with primera respuesta humana data
     reqcAbove:reqcVals, reqkAbove:reqkVals, respcAbove:respcVals, respkAbove:respkVals
   };
 
@@ -1387,6 +1411,11 @@ function renderKPI(){
       '≥'+T_QA_SCORE,
       avgQA!==null?avgQA+' <span style="font-size:13px;color:rgba(255,255,255,.3)">pts</span>':'N/D',
       (qaAchPct!==null?qaAchPct:'—'), qaAbove.length, qaVals.length-qaAbove.length, qaVals.length, 'qaAbove','qaScore','', qaColor
+    )
+    +kpiCard('kpi-orange','Primera Respuesta Chat',
+      '≥'+T_FHR+'% bajo 2 minutos',
+      fhrTeamPct!==null?fhrTeamPct+' <span style="font-size:13px;color:rgba(255,255,255,.3)">%</span>':'N/D',
+      (fhrAchPct!==null?fhrAchPct:'—'), fhrAbove.length, fhrVals.length-fhrAbove.length, fhrVals.length, 'fhrAbove','fhrPct','%', fhrColor
     );
 }
 
@@ -1404,10 +1433,11 @@ function showAgentsMeta(key, inMeta, valueKey, suffix){
     else if(valueKey==='responseCall') ok=a.responseCall>=T_RESPONSE_CALL;
     else if(valueKey==='occ') ok=(a.occ/100)>=OCC_LOW && (a.occ/100)<=OCC_HIGH;
     else if(valueKey==='qaScore') ok=a.qaScore>=T_QA_SCORE;
+    else if(valueKey==='fhrPct') ok=a.fhrPct>=T_FHR;
     else ok=a.chatPph>=T_CHAT_HR&&a.callPph>=T_CALL_HR;
     return inMeta?ok:!ok;
   });
-  var labelMap={chatPph:'Chats',callPph:'Llamadas',occ:'Occupancy',requestChat:'Request Rate Chat',requestCall:'Request Rate Llamadas',responseChat:'Response Rate Chat',responseCall:'Response Rate Llamadas',qaScore:'QA Score'};
+  var labelMap={chatPph:'Chats',callPph:'Llamadas',occ:'Occupancy',requestChat:'Request Rate Chat',requestCall:'Request Rate Llamadas',responseChat:'Response Rate Chat',responseCall:'Response Rate Llamadas',qaScore:'QA Score',fhrPct:'Primera respuesta humana'};
   var title=(inMeta?'✅ En meta — ':'🔴 No cumple — ')+(labelMap[valueKey]||valueKey);
   var colorFn=function(v){
     if(valueKey==='chatPph') return v>=T_CHAT_HR?'#22c55e':'#ef4444';
@@ -1419,6 +1449,7 @@ function showAgentsMeta(key, inMeta, valueKey, suffix){
     if(valueKey==='responseChat') return v>=T_RESPONSE_CHAT?'#fbbf24':'#f87171';
     if(valueKey==='responseCall') return v>=T_RESPONSE_CALL?'#a78bfa':'#f87171';
     if(valueKey==='qaScore') return v>=T_QA_SCORE?'#a78bfa':'#f87171';
+    if(valueKey==='fhrPct') return v>=T_FHR?'#22c55e':'#f87171';
     if(valueKey==='occ') return (v/100)>=OCC_LOW&&(v/100)<=OCC_HIGH?'#22c55e':((v/100)<OCC_LOW?'#ef4444':'#fbbf24');
     return rc(v).txt;
   };
@@ -2289,6 +2320,30 @@ renderDailyTable();
 .pgLine.tgt  { color:#fbbf24; }
 .pgLine.active { background:rgba(255,255,255,0.05);color:inherit; }
 .pgLine:not(.active) { opacity:0.35; }
+/* fhr-v2 */
+.ag-col-prod{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ag-col-prod > .ag-channel-card:first-child{flex:none}
+.ag-col-prod > #agFhrSlot{display:flex;flex:1}
+.fhr2-card{flex:1;min-width:0;background:rgba(255,255,255,.03);border:1px solid rgba(244,114,182,.28);border-radius:10px;padding:12px 12px 10px}
+.fhr2-head{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.fhr2-head .ag-channel-title{margin-bottom:0;font-size:10px;letter-spacing:.03em}
+.fhr2-big{margin-bottom:12px}
+.fhr2-num{font-family:'DM Mono',monospace;font-size:26px;font-weight:700;line-height:1}
+.fhr2-sub{display:block;margin-top:3px;font-size:10.5px;color:#64748b;line-height:1.35}
+.fhr2-row{margin-bottom:9px}
+.fhr2-lbl{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:11px;color:#cbd5e1;margin-bottom:3px}
+.fhr2-lbl b{font-family:'DM Mono',monospace;font-size:11.5px}
+.fhr2-track{height:8px;background:rgba(255,255,255,.06);border-radius:4px;position:relative}
+.fhr2-fill{height:100%;border-radius:4px}
+.fhr2-goal{position:absolute;top:-3px;bottom:-3px;width:2px;background:#e8eaed}
+.fhr2-foot{font-size:10px;color:#64748b;line-height:1.45;margin-top:4px}
+.fhr2-low{opacity:.6}
+.fhr2-empty{font-size:11.5px;color:#64748b;padding:2px 0;line-height:1.4}
+.kpi-orange{background:#2a1405;--kpi-glow:#fb923c}
+.kpi-grid{grid-template-columns:repeat(7,1fr)}
+@media(max-width:1400px){.kpi-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 
 <!-- AGENT DETAIL MODAL -->
@@ -2622,6 +2677,8 @@ function openAgentModal(agName) {
     console.error('openAgentModal: error construyendo KPIs/meta', errKpi);
   }
 
+  try { renderAgFhr(ag); } catch (errFhr) { console.error('openAgentModal: error en primera respuesta humana', errFhr); }
+
   // Evaluaciones QA — aislado en su propio try/catch: si falla, el resto del modal
   // (KPIs, gráfico, tabla diaria) se sigue viendo con normalidad.
   try {
@@ -2639,6 +2696,87 @@ function openAgentModal(agName) {
     var chartWrap = document.getElementById('agChartWrap') || document.getElementById('agChartCanvas');
     if (chartWrap) chartWrap.insertAdjacentHTML('afterend', '<p style="padding:12px;color:#f87171;font-size:12px">No se pudo cargar el detalle diario para este agente. Revisa la consola para más detalle.</p>');
   }
+}
+
+// ── Primera respuesta humana (Chat) en el modal del agente ──
+var T_FHR = 80;             // meta: % de chats con primera respuesta humana en menos de 2 minutos
+var FHR_MIN_CHATS = 30;     // con menos chats en el periodo se marca "muestra baja"
+var FHR_MIN_CHATS_DIA = 10; // si el rango es un solo día
+function fhrSumas(nombre){
+  var r = { c:0, b2:0, b10:0, s:0 };
+  if (_dateFilterMode === 'custom') {
+    var dias = DAILY_FHR[nombre];
+    if (dias) for (var d = _kpiDateFrom; d <= _kpiDateTo; d++) {
+      var v = dias[d];
+      if (v) { r.c += v[0]||0; r.b2 += v[1]||0; r.b10 += v[2]||0; r.s += v[3]||0; }
+    }
+  } else {
+    var m = FHR_MONTH[nombre];
+    if (m) { r.c = m[0]||0; r.b2 = m[1]||0; r.b10 = m[2]||0; r.s = m[3]||0; }
+  }
+  r.u2 = r.c - r.b2;
+  r.m2_10 = r.b2 - r.b10;
+  return r;
+}
+function fhrEquipoPct(){
+  var c = 0, u2 = 0;
+  AG.forEach(function(a){ var f = fhrSumas(a.name); c += f.c; u2 += f.u2; });
+  return c > 0 ? (u2 / c) * 100 : null;
+}
+function fhrCardHtml(ag){
+  var custom = (_dateFilterMode === 'custom');
+  var periodo = custom
+    ? (_kpiDateFrom === _kpiDateTo ? 'Día '+_kpiDateFrom+' '+MES_ABREV[_activeMonth] : _kpiDateFrom+' – '+_kpiDateTo+' '+MES_ABREV[_activeMonth])
+    : 'Todo '+MES_NOMBRE[_activeMonth];
+  var titulo = '<div class="ag-channel-title" style="color:#f472b6">Primera respuesta · Chat</div>';
+  var f = fhrSumas(ag.name);
+  if (f.c === 0) {
+    return '<div class="fhr2-card"><div class="fhr2-head">'+titulo+'</div><div class="fhr2-empty">Sin chats con primera respuesta humana en este periodo ('+periodo+').</div></div>';
+  }
+  var minimo = (custom && _kpiDateFrom === _kpiDateTo) ? FHR_MIN_CHATS_DIA : FHR_MIN_CHATS;
+  var low = f.c < minimo;
+  var pct = (f.u2 / f.c) * 100;
+  var colorGrande = pct >= T_FHR ? '#22c55e' : '#ef4444';
+  var avgMin = f.s / f.c / 60;
+  var equipo = fhrEquipoPct();
+  var partes = [
+    { lbl:'Menos de 2 minutos', n:f.u2,    color:'#22c55e', meta:true },
+    { lbl:'De 2 a 10 minutos',  n:f.m2_10, color:'#fbbf24' },
+    { lbl:'Más de 10 minutos',  n:f.b10,   color:'#ef4444' }
+  ];
+  var filas = partes.map(function(x){
+    var w = (x.n / f.c) * 100;
+    var meta = x.meta ? '<div class="fhr2-goal" style="left:'+T_FHR+'%" title="Meta '+T_FHR+'%"></div>' : '';
+    return '<div class="fhr2-row'+(low?' fhr2-low':'')+'" title="'+x.n+(x.n===1?' chat':' chats')+'"><div class="fhr2-lbl"><span>'+x.lbl+'</span><b style="color:'+x.color+'">'+w.toFixed(1)+'%</b></div>'
+      + '<div class="fhr2-track"><div class="fhr2-fill" style="width:'+w.toFixed(1)+'%;background:'+x.color+'"></div>'+meta+'</div></div>';
+  }).join('');
+  var grande = '<div class="fhr2-big'+(low?' fhr2-low':'')+'"><span class="fhr2-num" style="color:'+colorGrande+'">'+pct.toFixed(1)+'%</span>'
+    + '<span class="fhr2-sub">bajo 2 minutos · meta '+T_FHR+'%</span></div>';
+  var pie = f.c+(f.c===1?' chat':' chats')+' · '+avgMin.toFixed(1)+' minutos promedio<br>'
+    + (equipo !== null ? 'Equipo: '+equipo.toFixed(1)+'% · ' : '') + periodo
+    + (low ? '<br><b style="color:#fbbf24">Muestra baja:</b> menos de '+minimo+' chats.' : '');
+  return '<div class="fhr2-card"><div class="fhr2-head">'+titulo+'</div>'+grande+filas+'<div class="fhr2-foot">'+pie+'</div></div>';
+}
+function renderAgFhr(ag){
+  var strip = document.getElementById('agKpiStrip');
+  if (!strip) return;
+  var viejo = document.getElementById('agFhrSlot');
+  if (viejo && viejo.parentNode) viejo.parentNode.removeChild(viejo);
+  var hayDatos = Object.keys(FHR_MONTH).length > 0 || Object.keys(DAILY_FHR).length > 0;
+  if (!hayDatos) return;
+  var col = strip.querySelector('.ag-col-prod');
+  if (!col) {
+    var prod = strip.firstElementChild;
+    if (!prod) return;
+    col = document.createElement('div');
+    col.className = 'ag-col-prod';
+    strip.insertBefore(col, prod);
+    col.appendChild(prod);
+  }
+  var slot = document.createElement('div');
+  slot.id = 'agFhrSlot';
+  slot.innerHTML = fhrCardHtml(ag);
+  col.appendChild(slot);
 }
 
 // Occupancy — helpers de color/subtítulo para las tarjetas del modal
@@ -2990,7 +3128,7 @@ buildRow = function(a,rank,avatarBg,sb,wc,tlName,borderColor){
 // Re-render agents so the hook takes effect
 renderAgents();
 
-document.getElementById('lastUpdated').textContent='19/10/2026 08:53';
+document.getElementById('lastUpdated').textContent='19/10/2026 09:07';
 populateMonthSelect();
 setActiveMonth(LATEST_MONTH);
 </script>
